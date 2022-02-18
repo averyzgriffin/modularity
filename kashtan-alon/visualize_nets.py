@@ -19,7 +19,7 @@ def write_graphviz(network, file_path):
 
     layers_str = ["Input"] + ["L1"] + ["L2"] + ["L3"] + ["Output"]
     layers_col = ["none"] + ["none"] * (len(layers) - 2) + ["none"]
-    layers_fill = ["black"] + ["blue"] + [ "red"] + ["green"] + ["black"]
+    layers_fill = ["black"] + ["blue"] + [ "red"] + ["green"] + ["gray"]
 
     penwidth = 15
     font = "Hilda 10"
@@ -51,8 +51,12 @@ def write_graphviz(network, file_path):
 
         print(("\t\t"), end=' ')
 
-        for a in range(layers[i]):
-            print("l{}{} ".format(i + 1, a), end=' ')
+        if i == 0:
+            for a in range(layers[i]):
+                print("l{}{} [label=x_{}]".format(i + 1, a, a), end=' ')
+        else:
+            for a in range(layers[i]):
+                print("l{}{} [label={}]".format(i + 1, a, network["thresholds"][i-1][a][0]), end=' ')
 
         print(";")
         print(("\t\tlabel = {};".format(layers_str[i])))
