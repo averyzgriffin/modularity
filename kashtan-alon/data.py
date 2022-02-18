@@ -33,13 +33,11 @@ def save_networks(best_scores, average_scores, total_scores):
 
 
 def plot_results(best_scores, average_scores, runname):
-    fig = plt.figure(figsize=(21,7))
+    fig = plt.figure(figsize=(24,8))
     ax1 = fig.add_subplot(1, 2, 1)
     ax2 = fig.add_subplot(1, 2, 2)
-    # ax3 = fig.add_subplot(1, 3, 3)
     ax1.plot(best_scores, label='best loss')
     ax2.plot(average_scores, label='average loss')
-    # ax3.plot(total_scores, label='total loss')
     ax1.set_xlabel('Generation (n)')
     ax1.set_ylabel('Loss')
     ax1.set_title('Best Loss Each Generation')
@@ -48,10 +46,6 @@ def plot_results(best_scores, average_scores, runname):
     ax2.set_ylabel('Loss')
     ax2.set_title('Average Loss Each Generation')
     ax2.legend()
-    # ax3.set_xlabel('Generation (n)')
-    # ax3.set_ylabel('Loss')
-    # ax3.set_title('Total Loss Each Generation')
-    # ax3.legend()
 
     # plt.show()
     file_path = join('loss_curves', f'loss_{runname}.png').replace("\\", "/")
