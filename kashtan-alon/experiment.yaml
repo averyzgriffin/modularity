@@ -1,0 +1,12 @@
+# Config settings for main experiment
+
+runname: test
+num_samples: 100
+gen_sizes: [100]
+mutation_rates: [.00001, .001]
+generations: 10000
+
+# TODO - change how often the goal changes
+
+mvg: True
+checkpoint: 100

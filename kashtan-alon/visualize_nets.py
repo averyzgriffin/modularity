@@ -1,0 +1,92 @@
+# Inspired by
+# https://tgmstat.wordpress.com/2013/06/12/draw-neural-network-diagrams-graphviz/
+
+# UPDATE HISTORY
+# April, 2018 - 2to3 - Madhavun Candadai
+
+
+import graphviz
+from graphviz import Source
+import sys
+import subprocess
+
+
+def write_graphviz(network, file_path):
+    # network = build_network()
+    # apply_neuron_constraints(network)
+
+    layers = [8, 8, 4, 2, 1]
+
+    layers_str = ["Input"] + ["L1"] + ["L2"] + ["L3"] + ["Output"]
+    layers_col = ["none"] + ["none"] * (len(layers) - 2) + ["none"]
+    layers_fill = ["black"] + ["blue"] + [ "red"] + ["green"] + ["black"]
+
+    penwidth = 15
+    font = "Hilda 10"
+
+    orig_stdout = sys.stdout
+    f = open(file_path, "w")
+    sys.stdout = f
+
+    print("digraph G {")
+    print("\tordering=\"in\";")
+    print("\tfontname = \"{}\"".format(font))
+    print("\trankdir=LR")
+    print("\tsplines=line")
+    print("\tnodesep=.08;")
+    print("\tranksep=1;")
+    print("\tedge [color=black, arrowsize=.5];")
+    print("\tnode [fixedsize=true,label=\"\",style=filled," + \
+        "color=none,fillcolor=gray,shape=circle,ordering=\"in\"]\n")
+
+    # Clusters
+    for i in range(0, len(layers)):
+        print(("\tsubgraph cluster_{} {{".format(i)))
+        print("\t\tordering=\"in\";")
+        print(("\t\tcolor={};".format(layers_col[i])))
+        print(("\t\tnode [style=filled, color=white, penwidth={},"
+              "fillcolor={} shape=circle,ordering=\"in\"];".format(
+                  penwidth,
+                  layers_fill[i])))
+
+        print(("\t\t"), end=' ')
+
+        for a in range(layers[i]):
+            print("l{}{} ".format(i + 1, a), end=' ')
+
+        print(";")
+        print(("\t\tlabel = {};".format(layers_str[i])))
+
+        print("\t}\n")
+
+    # Nodes
+    for i in range(1, len(layers)):
+        for a in range(layers[i - 1]):
+            for b in range(layers[i]):
+                temp = network["thetas"][i-1][a][b]
+                if network["thetas"][i-1][a][b] == 1:
+                    print("\tl{}{} -> l{}{} [color=\"blue\"]".format(i, a, i + 1, b))
+                elif network["thetas"][i-1][a][b] == -1:
+                    print("\tl{}{} -> l{}{} [color=\"red\"]".format(i, a, i + 1, b))
+
+    print("}")
+
+    sys.stdout = orig_stdout
+    f.close()
+
+
+def plot_graphviz(file_path):
+    dot = Source.from_file(file_path)
+    dot.render(view=False)
+
+
+
+
+
+
+
+
+
+
+
+
