@@ -65,9 +65,13 @@ def write_graphviz(network, file_path):
             for b in range(layers[i]):
                 temp = network["thetas"][i-1][a][b]
                 if network["thetas"][i-1][a][b] == 1:
-                    print("\tl{}{} -> l{}{} [color=\"blue\"]".format(i, a, i + 1, b))
+                    print("\tl{}{} -> l{}{} [color=\"cyan\"]".format(i, a, i + 1, b))
+                elif network["thetas"][i-1][a][b] == 2:
+                    print("\tl{}{} -> l{}{} [color=\"cyan4\"]".format(i, a, i + 1, b))
                 elif network["thetas"][i-1][a][b] == -1:
                     print("\tl{}{} -> l{}{} [color=\"red\"]".format(i, a, i + 1, b))
+                elif network["thetas"][i-1][a][b] == -2:
+                    print("\tl{}{} -> l{}{} [color=\"red4\"]".format(i, a, i + 1, b))
 
     print("}")
 
