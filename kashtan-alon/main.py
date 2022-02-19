@@ -5,7 +5,7 @@ Run this module to run the actual neural-net evolution experiement
 import yaml
 
 from data_viz import plot_loss, record_loss, save_loss_to_csv, setup_savedir, visualize_networks
-from generate_labeled_data import generate_samples
+from generate_labeled_data import load_samples
 from genetic_algo import crossover, mutate, select_best
 from neural_network import evaluate_population, generate_population
 
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     checkpoint = config["checkpoint"]
 
     # Main loop for running experiment. Loops through hyperparamters
-    samples = generate_samples(num_samples)
+    samples = load_samples(num_samples, "samples")
     for p_m in mutation_rates:
         for gen_size in gen_sizes:
             if config["runname"]: runname = config["runname"]
