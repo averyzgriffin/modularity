@@ -1,10 +1,15 @@
+"""
+Contains all function related to the genetic algorithm itself.
+E.g. selection, crossover, and mutation.
+This is called by the main.py module
+"""
+
 import copy
-import json
 import numpy as np
 import random
 
-from build_networks import apply_neuron_constraints
-from data import visualize_solo_network
+from neural_network import apply_neuron_constraints
+
 
 def crossover(parents, gen_size):
     # If anything goes wrong, this function is complicated enough to warrant inspection
@@ -25,12 +30,6 @@ def crossover(parents, gen_size):
     return new_gen
 
 
-def default(obj):
-    if isinstance(obj, np.ndarray):
-        return obj.tolist()
-    raise TypeError('Not serializable')
-
-
 def mutate(networks, p_m):
     for i in range(len(networks)):
         for l in range(len(networks[i]["thetas"])):
@@ -43,17 +42,7 @@ def mutate(networks, p_m):
                     if l < 3: networks[i]["thresholds"][l][n] = random.randint(-4, 3)
                     else: networks[i]["thresholds"][l][n] = random.randint(-2, 1)
 
-        # w_file = open(f"solo_networks/preconstraint_{i}_.json", "w")
-        # json.dump(networks[i], w_file, default=default)
-        # w_file.close()
-        # visualize_solo_network(networks[i], name=f"{i}_pre")
-
         apply_neuron_constraints(networks[i])
-
-        # w_file = open(f"solo_networks/postconstraint_{i}_.json", "w")
-        # json.dump(networks[i], w_file, default=default)
-        # w_file.close()
-        # visualize_solo_network(networks[i], name=f"{i}_post")
 
     return networks
 

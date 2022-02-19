@@ -1,18 +1,26 @@
+"""
+Contains functions related to the neural networks themselves
+E.g. building the neural networks, computing feed-forward, thresholding, loss-functions.
+This is called by the main.py module
+"""
+
 import numpy as np
-import yaml
-
-from generate_labeled_data import generate_samples
-from build_networks import generate_population
+import random
 
 
-def feed_forward(x, network):
+def apply_neuron_constraints(network):
     thetas = network["thetas"]
-    ts = network["thresholds"]
-    for i in range(len(thetas)):
-        if i == 0: z = np.dot(x.transpose(), thetas[i])
-        else: z = np.dot(z, thetas[i])
-        apply_threshold(z, ts[i])
-    return z
+    for theta in thetas:
+        theta = theta.transpose()
+        for node_num in range(len(theta)):
+            total = sum(abs(theta[node_num]))
+            while total > 3:
+                choice = random.randint(0,len(theta.transpose())-1)
+                if theta[node_num][choice] > 0:
+                    theta[node_num][choice] -= 1
+                elif theta[node_num][choice] < 0:
+                    theta[node_num][choice] += 1
+                total = sum(abs(theta[node_num]))
 
 
 def apply_threshold(z, t):
@@ -21,9 +29,27 @@ def apply_threshold(z, t):
         else: z[i] = 0
 
 
+def build_network():
+    theta1 = np.random.choice([-2,2], (8,8))
+    theta2 = np.random.choice([-2,2], (8,4))
+    theta3 = np.random.choice([-2,2], (4,2))
+    theta4 = np.random.choice([-2,2], (2,1))
+    thrsh1 = np.random.randint(-4,3, (8,1))
+    thrsh2 = np.random.randint(-4,3, (4,1))
+    thrsh3 = np.random.randint(-4,3, (2,1))
+    thrsh4 = np.random.randint(-2,1, (1,1))
+
+    thetas = [theta1, theta2, theta3, theta4]
+    thresholds = [thrsh1, thrsh2, thrsh3, thrsh4]
+
+    network = {"thetas": thetas, "thresholds": thresholds, "loss": 0}
+
+    return network
+
+
 def calculate_loss(prediction, sample, gen_num, mvg):
     goal_is_and = True
-    if mvg and gen_num % 20 == 0:
+    if mvg and gen_num % 2 == 0:
         goal_is_and = not goal_is_and
     if goal_is_and:
         if sample["int_label"] == 3: label = 1
@@ -52,13 +78,22 @@ def evaluate_population(population, samples, gen_num, mvg):
     return population_loss
 
 
-# samples = generate_samples(100)
-# population = generate_population(200)
-# loss_scores = []
-#
-# for network in population:
-#     for sample in samples:
-#         evaluate_network(network, sample)
-#     loss_scores.append(network["loss"])
-#
-# parents = choose_parents(population, loss_scores)
+def feed_forward(x, network):
+    thetas = network["thetas"]
+    ts = network["thresholds"]
+    for i in range(len(thetas)):
+        if i == 0:
+            z = np.dot(x.transpose(), thetas[i])
+        else:
+            z = np.dot(z, thetas[i])
+        apply_threshold(z, ts[i])
+    return z
+
+
+def generate_population(n):
+    population = []
+    for i in range(n):
+        network = build_network()
+        apply_neuron_constraints(network)
+        population.append(network)
+    return population
