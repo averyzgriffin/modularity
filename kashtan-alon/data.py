@@ -56,7 +56,8 @@ def visualize_networks(population, runname, gen):
     num_to_plot = 0
     file_path = ""
     for i in range(len(population)):
-        file_path = join('network_graphs', runname, f'graphviz_gen{gen}_model{i}.txt').replace("\\", "/")
+        makedirs(join('network_graphs', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
+        file_path = join('network_graphs', runname, f"gen_{gen}", f'graphviz_model{i}.txt').replace("\\", "/")
         write_graphviz(population[i], file_path)
         plot_graphviz(file_path)
 
