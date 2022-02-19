@@ -1,12 +1,13 @@
-from generate_labeled_data import generate_samples
-from build_networks import generate_population
-from data import plot_results, record_loss, save_networks, setup_savedir, visualize_networks
-from neural_network import evaluate_population
-from genetic_algo import crossover, mutate, select_best
-# from visualize_nets import
+"""
+Run this module to run the actual neural-net evolution experiement
+"""
 
-import time
 import yaml
+
+from data_viz import plot_loss, record_loss, save_loss_to_csv, setup_savedir, visualize_networks
+from generate_labeled_data import generate_samples
+from genetic_algo import crossover, mutate, select_best
+from neural_network import evaluate_population, generate_population
 
 
 def main(samples, population, generations, mvg, checkpoint, runname):
@@ -27,20 +28,15 @@ def main(samples, population, generations, mvg, checkpoint, runname):
 
             if i % checkpoint == 0 or i == generations - 1:
                 visualize_networks(parents, runname, i)
-                plot_results(best_losses, average_losses, runname)
+                plot_loss(best_losses, average_losses, runname)
 
         population_loss = evaluate_population(population, samples, i, mvg)
         record_loss(population_loss, all_losses, best_losses, average_losses)
 
-        # if i % checkpoint == 0 or i == generations-1:
-        #     visualize_networks(parents, runname, i) # todo change to parents somehow
-
-    # plot_results(best_losses, average_losses, runname)
-    # save_networks(best_scores, average_scores, total_scores) todo
-
 
 if __name__ == "__main__":
 
+    # Load in the experiment configurations
     with open("experiment.yaml", 'r') as file:
         config = yaml.safe_load(file)
 
@@ -50,15 +46,13 @@ if __name__ == "__main__":
     generations = config["generations"]
     mvg = config["mvg"]
     checkpoint = config["checkpoint"]
-    if config["runname"]:
-        runname = config["runname"]
-    else:
-        runname = f"RUN_mvg{mvg}_gensize{gen_sizes}_mr{mutation_rates}_{time.time()}"
 
+    # Main loop for running experiment. Loops through hyperparamters
     samples = generate_samples(num_samples)
     for p_m in mutation_rates:
         for gen_size in gen_sizes:
-            # runname = f"RUN_mvg_gensize{gen_size}_pm{p_m}"
+            if config["runname"]: runname = config["runname"]
+            else: runname = f"RUN_mvg{mvg}_gensize{gen_size}_pm{p_m}"
             setup_savedir(runname)
             gen_0 = generate_population(gen_size)
             main(samples, gen_0, generations, mvg, checkpoint, runname)

@@ -1,3 +1,8 @@
+"""
+Various functions for visualizing different aspects of the experiement.
+E.g. plotting the loss curves and graphing the evolved networks.
+"""
+
 import csv
 import time
 

@@ -1,3 +1,9 @@
+"""
+Contains functions related to the neural networks themselves
+E.g. building the neural networks, computing feed-forward, thresholding, loss-functions.
+This is called by the main.py module
+"""
+
 import numpy as np
 import random
 

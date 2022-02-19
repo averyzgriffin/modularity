@@ -1,20 +1,20 @@
+"""
+Functions for writing and plotting Graphviz files. Used to visualize the neural networks
+"""
+
+# Original author
+# Madhavun Candadai
+
 # Inspired by
 # https://tgmstat.wordpress.com/2013/06/12/draw-neural-network-diagrams-graphviz/
-
-# UPDATE HISTORY
-# April, 2018 - 2to3 - Madhavun Candadai
 
 
 import graphviz
 from graphviz import Source
 import sys
-import subprocess
 
 
 def write_graphviz(network, file_path):
-    # network = build_network()
-    # apply_neuron_constraints(network)
-
     layers = [8, 8, 4, 2, 1]
 
     layers_str = ["Input"] + ["L1"] + ["L2"] + ["L3"] + ["Output"]
