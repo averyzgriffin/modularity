@@ -1,17 +1,15 @@
 import csv
 import time
 
-import os
 from os import makedirs
 from os.path import join
 from matplotlib import pyplot as plt
-import subprocess
 
 from visualize_nets import write_graphviz, plot_graphviz
 
 
 def setup_savedir(runname):
-    os.makedirs(join("network_graphs", runname).replace("\\", "/"), exist_ok=True)
+    makedirs(join("network_graphs", runname).replace("\\", "/"), exist_ok=True)
     makedirs("loss_curves", exist_ok=True)
 
 
@@ -23,7 +21,7 @@ def record_loss(population_loss, all_losses, best_losses, average_losses):
     average_losses.append(average_loss)
 
 
-def save_networks(best_scores, average_scores, total_scores):
+def save_loss_to_csv(best_scores, average_scores, total_scores):
     with open('loss.csv', 'a') as fd:
         writer = csv.writer(fd)
         writer.writerow("new gen")
@@ -32,7 +30,7 @@ def save_networks(best_scores, average_scores, total_scores):
         writer.writerow(total_scores)
 
 
-def plot_results(best_scores, average_scores, runname):
+def plot_loss(best_scores, average_scores, runname):
     fig = plt.figure(figsize=(24,8))
     ax1 = fig.add_subplot(1, 2, 1)
     ax2 = fig.add_subplot(1, 2, 2)
@@ -53,7 +51,6 @@ def plot_results(best_scores, average_scores, runname):
 
 
 def visualize_networks(population, runname, gen):
-    num_to_plot = 0
     file_path = ""
     for i in range(len(population)):
         makedirs(join('network_graphs', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
