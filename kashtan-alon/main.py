@@ -38,7 +38,7 @@ def main(samples, population, generations, mvg, checkpoint, runname, mvg_frequen
                 visualize_networks(parents, runname, i)
                 plot_loss(best_losses, average_losses, runname)
 
-        population_loss = evaluate_population(population, samples, i, mvg)
+        population_loss = evaluate_population(population, samples, i, mvg, mvg_frequency)
         record_loss(population_loss, all_losses, best_losses, average_losses)
 
     for i in range(len(parents)):
@@ -61,17 +61,19 @@ if __name__ == "__main__":
     mutation_rates = config["mutation_rates"]
     generations = config["generations"]
     mvg = config["mvg"]
+    mvg_frequencies = config["mvg_frequency"]
     checkpoint = config["checkpoint"]
 
     # Main loop for running experiment. Loops through hyperparamters
     samples = load_samples(num_samples, "samples")
     for p_m in mutation_rates:
         for gen_size in gen_sizes:
-            if config["runname"]: runname = config["runname"]
-            else: runname = f"RUN_mvg{mvg}_gensize{gen_size}_pm{p_m}"
-            setup_savedir(runname)
-            gen_0 = generate_population(gen_size)
-            main(samples, gen_0, generations, mvg, checkpoint, runname)
+            for mvg_frequency in mvg_frequencies:
+                if config["runname"]: runname = config["runname"]
+                else: runname = f"mvg{mvg_frequency}_gensize{gen_size}_pm{p_m}"
+                setup_savedir(runname)
+                gen_0 = generate_population(gen_size)
+                main(samples, gen_0, generations, mvg, checkpoint, runname, mvg_frequency)
 
 
 

@@ -47,9 +47,9 @@ def build_network():
     return network
 
 
-def calculate_loss(prediction, sample, gen_num, mvg):
+def calculate_loss(prediction, sample, gen_num, mvg, mvg_frequency):
     goal_is_and = True
-    if mvg and gen_num % 2 == 0:
+    if mvg and gen_num % mvg_frequency == 0:
         goal_is_and = not goal_is_and
     if goal_is_and:
         if sample["int_label"] == 3: label = 1
