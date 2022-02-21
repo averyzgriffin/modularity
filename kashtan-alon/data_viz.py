@@ -9,6 +9,7 @@ import time
 from os import makedirs
 from os.path import join
 from matplotlib import pyplot as plt
+import pickle
 from tqdm import tqdm
 
 from visualize_nets import write_graphviz, plot_graphviz
@@ -53,8 +54,10 @@ def plot_loss(best_scores, average_scores, runname):
     ax2.legend()
 
     # plt.show()
-    file_path = join('loss_curves', f'loss_{runname}.png').replace("\\", "/")
-    plt.savefig(file_path)
+    file_path = join('loss_curves', f'loss_{runname}').replace("\\", "/")
+    plt.savefig(file_path+".png")
+    with open(file_path+".pickle", 'wb') as fid:
+        pickle.dump(fig, fid)
 
 
 def visualize_networks(population, runname, gen):
