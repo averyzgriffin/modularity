@@ -6,6 +6,7 @@ This is called by the main.py module
 
 import numpy as np
 import random
+from tqdm import tqdm
 
 
 def apply_neuron_constraints(network):
@@ -89,7 +90,7 @@ def feed_forward(x, network):
 
 def generate_population(n):
     population = []
-    for i in range(n):
+    for i in tqdm(range(n), desc="Generating population"):
         network = build_network()
         apply_neuron_constraints(network)
         population.append(network)

@@ -9,6 +9,7 @@ import time
 from os import makedirs
 from os.path import join
 from matplotlib import pyplot as plt
+from tqdm import tqdm
 
 from visualize_nets import write_graphviz, plot_graphviz
 
@@ -58,7 +59,7 @@ def plot_loss(best_scores, average_scores, runname):
 
 def visualize_networks(population, runname, gen):
     file_path = ""
-    for i in range(len(population)):
+    for i in tqdm(range(len(population)), desc="Saving plots of networks"):
         makedirs(join('network_graphs', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
         file_path = join('network_graphs', runname, f"gen_{gen}", f'graphviz_model{i}.txt').replace("\\", "/")
         write_graphviz(population[i], file_path)

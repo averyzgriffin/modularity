@@ -2,6 +2,7 @@ import numpy as np
 from os.path import join
 from os import replace
 import json
+from tqdm import tqdm
 
 # example = [0, 1, 0, 0,
 #           1, 1, 0, 0]
@@ -9,7 +10,7 @@ import json
 
 def load_samples(num_samples, dir):
     loaded_samples = []
-    for i in range(num_samples):
+    for i in tqdm(range(num_samples), desc="Loading labeled data"):
         w_file = open(join(dir, f"sample_{i}.json").replace("\\", "/"), "r")
         sample = json.load(w_file)
         sample["pixels"] = np.array(sample["pixels"])
