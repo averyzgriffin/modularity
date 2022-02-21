@@ -18,7 +18,7 @@ def default(obj):
     raise TypeError('Not serializable')
 
 
-def main(samples, population, generations, mvg, checkpoint, runname, mvg_frequency):
+def main(samples, population, generations, p_m, mvg, checkpoint, runname, mvg_frequency):
     goal_is_and = True
     num_parents = int(len(population)*.2)
 
@@ -35,11 +35,16 @@ def main(samples, population, generations, mvg, checkpoint, runname, mvg_frequen
         if mvg and i % mvg_frequency == 0 and i != 0:
             goal_is_and = not goal_is_and
             print(f"Goal changed to goal_is_and={goal_is_and}")
+        if goal_is_and: print(f"Goal is L AND R")
+        else: print("Goal is L OR R")
 
-        if goal_is_and:
-            print(f"Goal is L AND R")
-        else:
-            print("Goal is L OR R")
+        # Varying the mutation rate
+        if i == 500:
+            p_m = .01
+        if i == 1000:
+            p_m = .001
+        if i == 5000:
+            p_m = .0001
 
         if i > 0:
             parents = select_best(population, all_losses[i-1], num_parents)
@@ -85,7 +90,7 @@ if __name__ == "__main__":
                 else: runname = f"mvg{mvg_frequency}_gensize{gen_size}_pm{p_m}"
                 setup_savedir(runname)
                 gen_0 = generate_population(gen_size)
-                main(samples, gen_0, generations, mvg, checkpoint, runname, mvg_frequency)
+                main(samples, gen_0, generations, p_m, mvg, checkpoint, runname, mvg_frequency)
 
 
 
