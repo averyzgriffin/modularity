@@ -19,6 +19,7 @@ def default(obj):
 
 
 def main(samples, population, generations, mvg, checkpoint, runname, mvg_frequency):
+    goal_is_and = True
     num_parents = int(len(population)*.2)
 
     all_losses = []
@@ -29,6 +30,17 @@ def main(samples, population, generations, mvg, checkpoint, runname, mvg_frequen
 
     for i in range(generations):
         print("\n ---- Starting Gen ", i)
+
+        # Varying the Loss Function
+        if mvg and i % mvg_frequency == 0 and i != 0:
+            goal_is_and = not goal_is_and
+            print(f"Goal changed to goal_is_and={goal_is_and}")
+
+        if goal_is_and:
+            print(f"Goal is L AND R")
+        else:
+            print("Goal is L OR R")
+
         if i > 0:
             parents = select_best(population, all_losses[i-1], num_parents)
             offspring = crossover(parents, gen_size)
@@ -38,7 +50,7 @@ def main(samples, population, generations, mvg, checkpoint, runname, mvg_frequen
                 visualize_networks(parents, runname, i)
                 plot_loss(best_losses, average_losses, runname)
 
-        population_loss = evaluate_population(population, samples, i, mvg, mvg_frequency)
+        population_loss = evaluate_population(population, samples, goal_is_and)
         record_loss(population_loss, all_losses, best_losses, average_losses)
 
     for i in range(len(parents)):

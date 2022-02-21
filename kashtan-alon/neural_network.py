@@ -47,10 +47,7 @@ def build_network():
     return network
 
 
-def calculate_loss(prediction, sample, gen_num, mvg, mvg_frequency):
-    goal_is_and = True
-    if mvg and gen_num % mvg_frequency == 0:
-        goal_is_and = not goal_is_and
+def calculate_loss(prediction, sample, goal_is_and):
     if goal_is_and:
         if sample["int_label"] == 3: label = 1
         else: label = 0
@@ -61,21 +58,19 @@ def calculate_loss(prediction, sample, gen_num, mvg, mvg_frequency):
     return int((prediction - label)**2)
 
 
-def evaluate_network(network, sample, gen_num, mvg, mvg_frequency):
+def evaluate_network(network, sample, goal_is_and):
     x = sample["pixels"]
     prediction = feed_forward(x, network)
-    # print("prediction: ", prediction)
-    loss = calculate_loss(prediction, sample, gen_num, mvg, mvg_frequency)
-    # print("correct?: ", not loss)
+    loss = calculate_loss(prediction, sample, goal_is_and)
     network["loss"] += loss
 
 
-def evaluate_population(population, samples, gen_num, mvg, mvg_frequency=20):
+def evaluate_population(population, samples, goal_is_and):
     population_loss = []
     for network in population:
         network["loss"] = 0
         for sample in samples:
-            evaluate_network(network, sample, gen_num, mvg, mvg_frequency)
+            evaluate_network(network, sample, goal_is_and)
         population_loss.append(network["loss"])
     return population_loss
 
