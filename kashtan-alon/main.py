@@ -2,6 +2,8 @@
 Run this module to run the actual neural-net evolution experiement
 """
 
+import json
+import numpy as np
 import yaml
 
 from data_viz import plot_loss, record_loss, save_loss_to_csv, setup_savedir, visualize_networks
@@ -10,7 +12,13 @@ from genetic_algo import crossover, mutate, select_best
 from neural_network import evaluate_population, generate_population
 
 
-def main(samples, population, generations, mvg, checkpoint, runname):
+def default(obj):
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    raise TypeError('Not serializable')
+
+
+def main(samples, population, generations, mvg, checkpoint, runname, mvg_frequency):
     num_parents = int(len(population)*.2)
 
     all_losses = []
@@ -26,12 +34,20 @@ def main(samples, population, generations, mvg, checkpoint, runname):
             offspring = crossover(parents, gen_size)
             population = mutate(offspring, p_m)
 
-            if i % checkpoint == 0 or i == generations - 1:
+            if i % checkpoint == 0:
                 visualize_networks(parents, runname, i)
                 plot_loss(best_losses, average_losses, runname)
 
         population_loss = evaluate_population(population, samples, i, mvg)
         record_loss(population_loss, all_losses, best_losses, average_losses)
+
+    for i in range(len(parents)):
+        w_file = open(f"saved_weights/network_{i}.json", "w")
+        json.dump(parents[i], w_file, default=default)
+        w_file.close()
+
+    visualize_networks(parents, runname, generations)
+    plot_loss(best_losses, average_losses, runname)
 
 
 if __name__ == "__main__":
