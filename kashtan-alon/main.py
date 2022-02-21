@@ -45,6 +45,7 @@ def main(samples, population, generations, mvg, checkpoint, runname, mvg_frequen
             parents = select_best(population, all_losses[i-1], num_parents)
             offspring = crossover(parents, gen_size)
             population = mutate(offspring, p_m)
+            population = parents + population
 
             if i % checkpoint == 0:
                 visualize_networks(parents, runname, i)
