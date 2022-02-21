@@ -13,7 +13,7 @@ from neural_network import apply_neuron_constraints
 
 def crossover(parents, gen_size):
     new_gen = []
-    for i in range(gen_size):
+    for i in range(int(gen_size*.80)):
         # Select parents
         parent_1 = parents[np.random.randint(0,len(parents))]
         parent_2 = parents[np.random.randint(0,len(parents))]
