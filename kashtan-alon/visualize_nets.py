@@ -22,7 +22,6 @@ def write_graphviz(network, file_path):
     layers_fill = ["black"] + ["blue"] + [ "red"] + ["green"] + ["gray"]
 
     penwidth = 15
-    font = "Hilda 10"
 
     orig_stdout = sys.stdout
     f = open(file_path, "w")
@@ -30,7 +29,6 @@ def write_graphviz(network, file_path):
 
     print("digraph G {")
     print("\tordering=\"in\";")
-    print("\tfontname = \"{}\"".format(font))
     print("\trankdir=LR")
     print("\tsplines=line")
     print("\tnodesep=.08;")
