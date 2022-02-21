@@ -16,6 +16,7 @@ from visualize_nets import write_graphviz, plot_graphviz
 def setup_savedir(runname):
     makedirs(join("network_graphs", runname).replace("\\", "/"), exist_ok=True)
     makedirs("loss_curves", exist_ok=True)
+    makedirs(f"saved_weights/{runname}", exist_ok=True)
 
 
 def record_loss(population_loss, all_losses, best_losses, average_losses):
