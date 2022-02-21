@@ -64,7 +64,9 @@ def calculate_loss(prediction, sample, gen_num, mvg, mvg_frequency):
 def evaluate_network(network, sample, gen_num, mvg, mvg_frequency):
     x = sample["pixels"]
     prediction = feed_forward(x, network)
-    loss = calculate_loss(prediction, sample, gen_num, mvg)
+    # print("prediction: ", prediction)
+    loss = calculate_loss(prediction, sample, gen_num, mvg, mvg_frequency)
+    # print("correct?: ", not loss)
     network["loss"] += loss
 
 
