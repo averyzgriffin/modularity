@@ -61,19 +61,19 @@ def calculate_loss(prediction, sample, gen_num, mvg, mvg_frequency):
     return int((prediction - label)**2)
 
 
-def evaluate_network(network, sample, gen_num, mvg):
+def evaluate_network(network, sample, gen_num, mvg, mvg_frequency):
     x = sample["pixels"]
     prediction = feed_forward(x, network)
     loss = calculate_loss(prediction, sample, gen_num, mvg)
     network["loss"] += loss
 
 
-def evaluate_population(population, samples, gen_num, mvg):
+def evaluate_population(population, samples, gen_num, mvg, mvg_frequency=20):
     population_loss = []
     for network in population:
         network["loss"] = 0
         for sample in samples:
-            evaluate_network(network, sample, gen_num, mvg)
+            evaluate_network(network, sample, gen_num, mvg, mvg_frequency)
         population_loss.append(network["loss"])
     return population_loss
 
