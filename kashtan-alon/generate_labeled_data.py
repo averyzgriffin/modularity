@@ -12,6 +12,7 @@ def load_samples(num_samples, dir):
     for i in range(num_samples):
         w_file = open(join(dir, f"sample_{i}.json").replace("\\", "/"), "r")
         sample = json.load(w_file)
+        sample["pixels"] = np.array(sample["pixels"])
         loaded_samples.append(sample)
         w_file.close()
     return loaded_samples
