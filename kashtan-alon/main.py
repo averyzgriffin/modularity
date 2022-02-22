@@ -26,7 +26,7 @@ def main(samples, population, generations, p_m, mvg, checkpoint, runname, mvg_fr
     best_losses = []
     average_losses = []
 
-    visualize_networks(population, runname, 0)
+    visualize_networks(population[:10], runname, 0)
 
     for i in range(generations):
         print("\n ---- Starting Gen ", i)
@@ -38,15 +38,19 @@ def main(samples, population, generations, p_m, mvg, checkpoint, runname, mvg_fr
         if goal_is_and: print(f"Goal is L AND R")
         else: print("Goal is L OR R")
 
-        # Varying the mutation rate
-        if i == 500:
-            p_m = .01
-        if i == 1000:
-            p_m = .001
-        if i == 5000:
-            p_m = .0001
+        # # Varying the mutation rate
+        # # if i % 500 == 0 and i != 0:
+        # #     p_m /= 10
+        # if i == 500:
+        #     p_m = .01
+        # if i == 1000:
+        #     p_m = .001
+        # if i == 5000:
+        #     p_m = .0001
+        print("mutation rate: ", p_m)
 
         if i > 0:
+            # Main genetic algorithm code
             parents = select_best(population, all_losses[i-1], num_parents)
             offspring = crossover(parents, gen_size)
             population = mutate(offspring, p_m)
@@ -59,11 +63,13 @@ def main(samples, population, generations, p_m, mvg, checkpoint, runname, mvg_fr
         population_loss = evaluate_population(population, samples, goal_is_and)
         record_loss(population_loss, all_losses, best_losses, average_losses)
 
+    # Saved the weights at the very end
     for i in range(len(parents)):
         w_file = open(f"saved_weights/network_{i}.json", "w")
         json.dump(parents[i], w_file, default=default)
         w_file.close()
 
+    # Save the loss score and graphs of the networks at the very end
     visualize_networks(parents, runname, generations)
     plot_loss(best_losses, average_losses, runname)
 
