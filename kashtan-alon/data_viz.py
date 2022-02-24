@@ -73,7 +73,7 @@ def visualize_solo_network(network, name=None):
     if name: name = name
     else: name = time.time()
     makedirs('iso_networks', exist_ok=True)
-    file_path = join('iso_networks', f"network_{name}.txt").replace("\\", "/")
+    file_path = join('iso_networks', f"{name}.txt").replace("\\", "/")
     write_graphviz(network, file_path)
     plot_graphviz(file_path)
 
