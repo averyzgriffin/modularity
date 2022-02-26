@@ -86,6 +86,7 @@ if __name__ == "__main__":
     goals = config["goals"]
     mvg_frequencies = config["mvg_frequency"]
     checkpoint = config["checkpoint"]
+    elites = config["elite"]
 
     # Main loop for running experiment. Loops through hyperparamters
     samples = load_samples(num_samples, "samples")
