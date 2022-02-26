@@ -35,7 +35,7 @@ class NetworkGraph:
 
     @staticmethod
     def initiate_graph():
-        return nx.DiGraph()
+        return nx.Graph()
 
     def convert2graph(self):
         # Convert input layer to graph
