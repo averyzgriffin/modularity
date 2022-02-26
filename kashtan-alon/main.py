@@ -26,6 +26,8 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
     average_losses = []
 
     visualize_networks(population[:10], runname, 0)
+    convert_networks(population[:10], runname, 0)
+    save_weights(population[:10], runname, 0)
 
     for i in range(generations):
         print("\n ---- Starting Gen ", i)
@@ -56,21 +58,21 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
             population = parents + population
 
             if i % checkpoint == 0:
-                visualize_networks(parents, runname, i)
+                convert_networks(parents[:10], runname, i)
                 plot_loss(best_losses, average_losses, runname)
+                save_weights(parents[:10], runname, i)
+                visualize_networks(parents[:10], runname, i)
+
+
 
         population_loss = evaluate_population(population, samples, goal_is_and)
         record_loss(population_loss, all_losses, best_losses, average_losses)
 
-    # Saved the weights at the very end
-    for i in range(len(parents)):
-        w_file = open(f"saved_weights/network_{i}.json", "w")
-        json.dump(parents[i], w_file, default=default)
-        w_file.close()
-
-    # Save the loss score and graphs of the networks at the very end
-    visualize_networks(parents, runname, generations)
+    # Save experiment data at the very end
+    convert_networks(parents[:10], runname, generations)
     plot_loss(best_losses, average_losses, runname)
+    save_weights(parents[:10], runname, generations)
+    visualize_networks(parents[:10], runname, generations)
 
 
 if __name__ == "__main__":
