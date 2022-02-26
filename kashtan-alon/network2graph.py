@@ -5,6 +5,7 @@ import numpy as np
 import json
 from data_viz import visualize_solo_network
 from network_graphs import NetworkGraph, convert_networks
+from modularity import compute_modularity
 
 
 def the_hard_way(network):
@@ -31,7 +32,18 @@ def load_networks():
 
 population = load_networks()
 
-convert_networks(population[:10], runname="test", gen=42)
+# convert_networks(population[:10], runname="test", gen=42)
+
+ng = NetworkGraph(population[0])
+ng.convert2graph()
+ng.get_data()
+# ng.draw_graph("", show=True)
+
+Q = compute_modularity(ng)
+
+
+
+x = 4
 
 
 # # Convert network to graph
