@@ -17,8 +17,7 @@ def default(obj):
         return obj.tolist()
     raise TypeError('Not serializable')
 
-
-def main(samples, population, generations, p_m, mvg, checkpoint, runname, mvg_frequency):
+def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite):
     goal_is_and = True
     num_parents = int(len(population)*.2)
 
@@ -32,7 +31,7 @@ def main(samples, population, generations, p_m, mvg, checkpoint, runname, mvg_fr
         print("\n ---- Starting Gen ", i)
 
         # Varying the Loss Function
-        if mvg and i % mvg_frequency == 0 and i != 0:
+        if goal == "mvg" and i % mvg_frequency == 0 and i != 0:
             goal_is_and = not goal_is_and
             print(f"Goal changed to goal_is_and={goal_is_and}")
         if goal_is_and: print(f"Goal is L AND R")
@@ -84,20 +83,22 @@ if __name__ == "__main__":
     gen_sizes = config["gen_sizes"]
     mutation_rates = config["mutation_rates"]
     generations = config["generations"]
-    mvg = config["mvg"]
+    goals = config["goals"]
     mvg_frequencies = config["mvg_frequency"]
     checkpoint = config["checkpoint"]
 
     # Main loop for running experiment. Loops through hyperparamters
     samples = load_samples(num_samples, "samples")
-    for p_m in mutation_rates:
-        for gen_size in gen_sizes:
-            for mvg_frequency in mvg_frequencies:
-                if config["runname"]: runname = config["runname"]
-                else: runname = f"mvg{mvg_frequency}_gensize{gen_size}_pm{p_m}"
-                setup_savedir(runname)
-                gen_0 = generate_population(gen_size)
-                main(samples, gen_0, generations, p_m, mvg, checkpoint, runname, mvg_frequency)
+    for gen_size in gen_sizes:
+        for goal in goals:
+            for elite in elites:
+                for p_m in mutation_rates:
+                    for mvg_frequency in mvg_frequencies:
+                        if goal == "fixed": mvg_frequency = 0
+                        if config["runname"]: runname = config["runname"]
+                        else: runname = f"elite{elite}_goal{goal}_mvg{mvg_frequency}_gensize{gen_size}_pm{p_m}"
+                        gen_0 = generate_population(gen_size)
+                        main(samples, gen_0, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite)
 
 
 
