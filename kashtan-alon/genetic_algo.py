@@ -11,9 +11,11 @@ import random
 from neural_network import apply_neuron_constraints
 
 
-def crossover(parents, gen_size):
+def crossover(parents, gen_size, elite):
     new_gen = []
-    for i in range(int(gen_size*.80)):
+    if elite: num_child = int(gen_size*.80)
+    else: num_child = int(gen_size)
+    for i in range(num_child):
         # Select parents
         parent_1 = parents[np.random.randint(0,len(parents))]
         parent_2 = parents[np.random.randint(0,len(parents))]
