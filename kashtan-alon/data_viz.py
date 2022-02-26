@@ -15,12 +15,6 @@ from tqdm import tqdm
 from visualize_nets import write_graphviz, plot_graphviz
 
 
-def setup_savedir(runname):
-    makedirs(join("network_graphs", runname).replace("\\", "/"), exist_ok=True)
-    makedirs("loss_curves", exist_ok=True)
-    makedirs(f"saved_weights/{runname}", exist_ok=True)
-
-
 def record_loss(population_loss, all_losses, best_losses, average_losses):
     all_losses.append(population_loss)
     average_loss = round(sum(population_loss) / len(population_loss), 3)
@@ -59,12 +53,15 @@ def plot_loss(best_scores, average_scores, runname):
     with open(file_path+".pickle", 'wb') as fid:
         pickle.dump(fig, fid)
 
+    fig.clear()
+    plt.close(fig)
+
 
 def visualize_networks(population, runname, gen):
     file_path = ""
     for i in tqdm(range(len(population)), desc="Saving plots of networks"):
-        makedirs(join('network_graphs', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
-        file_path = join('network_graphs', runname, f"gen_{gen}", f'graphviz_model{i}.txt').replace("\\", "/")
+        makedirs(join('network_plots', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
+        file_path = join('network_plots', runname, f"gen_{gen}", f'graphviz_model{i}.txt').replace("\\", "/")
         write_graphviz(population[i], file_path)
         plot_graphviz(file_path)
 
