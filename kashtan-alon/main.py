@@ -3,19 +3,17 @@ Run this module to run the actual neural-net evolution experiement
 """
 
 import json
+from matplotlib import pyplot as plt
 import numpy as np
 import yaml
 
-from data_viz import plot_loss, record_loss, save_loss_to_csv, setup_savedir, visualize_networks
+from data_save import save_weights
+from data_viz import plot_loss, record_loss, visualize_networks
 from generate_labeled_data import load_samples
 from genetic_algo import crossover, mutate, select_best
 from neural_network import evaluate_population, generate_population
+from network_graphs import convert_networks
 
-
-def default(obj):
-    if isinstance(obj, np.ndarray):
-        return obj.tolist()
-    raise TypeError('Not serializable')
 
 def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite):
     goal_is_and = True
@@ -30,7 +28,7 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
     save_weights(population[:10], runname, 0)
 
     for i in range(generations):
-        print("\n ---- Starting Gen ", i)
+        print(f"\n ---- Run {runname}. Starting Gen {i}")
 
         # Varying the Loss Function
         if goal == "mvg" and i % mvg_frequency == 0 and i != 0:
@@ -50,13 +48,19 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
         #     p_m = .0001
         print("mutation rate: ", p_m)
 
+        f = plt.figure()
+        f.clear()
+        plt.close(f)
+
         if i > 0:
             # Main genetic algorithm code
             parents = select_best(population, all_losses[i-1], num_parents)
-            offspring = crossover(parents, gen_size)
+            offspring = crossover(parents, gen_size, elite)
             population = mutate(offspring, p_m)
-            population = parents + population
+            if elite:
+                population = parents + population
 
+            # Save experiment data at every checkpoint
             if i % checkpoint == 0:
                 convert_networks(parents[:10], runname, i)
                 plot_loss(best_losses, average_losses, runname)
