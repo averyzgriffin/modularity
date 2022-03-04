@@ -75,6 +75,17 @@ def evaluate_population(population, samples, goal_is_and):
         population_loss.append(network["loss"])
     return population_loss
 
+def evaluate_q(population):
+    population_q = []
+    for network in population:
+        network["q"] = 0
+        ng = NetworkGraph(network)
+        ng.convert2graph()
+        ng.get_data()
+        network["q"] = compute_modularity(ng)
+        population_q.append(network["q"])
+    return population_q
+
 
 def feed_forward(x, network):
     thetas = network["thetas"]
