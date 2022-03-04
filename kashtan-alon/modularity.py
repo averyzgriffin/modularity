@@ -7,6 +7,8 @@ import networkx
 import json
 import numpy as np
 from network_graphs import NetworkGraph
+from tqdm import tqdm
+# from neural_network import build_network, apply_neuron_constraints
 
 
 def compute_modularity(ng: NetworkGraph):
@@ -42,11 +44,35 @@ def compute_degrees(G: networkx.Graph, module):
         deg += G.degree()[node]
     return deg
 
+#
+# def normalize_q(Q):
+#     randQ = compute_randQ()
+#     maxQ = compute_maxQ()
+#     return (Q - randQ) / (maxQ - randQ)
 
-def normalize_q(Q):
-    return 42 #(Q - randQ) / (maxQ - randQ)
+
+# def compute_randQ():
+#     random_population = generate_population(1000)
+#     totalQ = 0
+#     for network in random_population:
+#         ng = NetworkGraph(network)
+#         ng.convert2graph()
+#         ng.get_data()
+#         totalQ += compute_modularity(ng)
+#
+#     averageQ = totalQ / len(random_population)
+#     return averageQ
 
 
+def compute_maxQ():
+    pass
 
 
+# def generate_population(n):
+#     population = []
+#     for i in tqdm(range(n), desc="Generating population"):
+#         network = build_network()
+#         apply_neuron_constraints(network)
+#         population.append(network)
+#     return population
 
