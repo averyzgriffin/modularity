@@ -31,8 +31,11 @@ def compute_connections(ng: networkx.Graph, module):
     return module_connections
 
 
-def compute_degrees(module):
-    return 42
+def compute_degrees(G: networkx.Graph, module):
+    deg = 0
+    for node in module:
+        deg += G.degree()[node]
+    return deg
 
 
 def normalize_q(Q):
