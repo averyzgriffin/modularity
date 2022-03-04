@@ -68,6 +68,31 @@ def plot_loss(best_scores, average_scores, runname):
     plt.close(fig)
 
 
+def plot_q(best_scores, average_scores, runname):
+    matplotlib.use("Agg")
+    fig = plt.figure(figsize=(24,8))
+    ax1 = fig.add_subplot(1, 2, 1)
+    ax2 = fig.add_subplot(1, 2, 2)
+    ax1.plot(best_scores, label='best Q')
+    ax2.plot(average_scores, label='average Q')
+    ax1.set_xlabel('Generation (n)')
+    ax1.set_ylabel('Q')
+    ax1.set_title('Best Q Each Generation')
+    ax1.legend()
+    ax2.set_xlabel('Generation (n)')
+    ax2.set_ylabel('Q')
+    ax2.set_title('Average Q Each Generation')
+    ax2.legend()
+
+    file_path = join('Q_curves', f'Q_{runname}').replace("\\", "/")
+    plt.savefig(file_path+".png")
+    with open(file_path+".pickle", 'wb') as fid:
+        pickle.dump(fig, fid)
+
+    fig.clear()
+    plt.close(fig)
+
+
 def visualize_networks(population, runname, gen):
     file_path = ""
     for i in tqdm(range(len(population)), desc="Saving plots of networks"):
