@@ -3,25 +3,32 @@ Run this module to run the actual neural-net evolution experiement
 """
 
 import json
+import matplotlib
 from matplotlib import pyplot as plt
 import numpy as np
 import yaml
 
-from data_save import save_weights
-from data_viz import plot_loss, record_loss, visualize_networks
+from data_save import save_weights, save_q
+from data_viz import plot_loss, record_loss, visualize_networks, plot_q, record_q
 from generate_labeled_data import load_samples
-from genetic_algo import crossover, mutate, select_best
-from neural_network import evaluate_population, generate_population
+from genetic_algo import crossover, mutate, select_best_loss
+from neural_network import evaluate_population, generate_population, evaluate_q
 from network_graphs import convert_networks
 
 
 def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite):
+    matplotlib.use("Agg")
+
     goal_is_and = True
     num_parents = int(len(population)*.2)
 
     all_losses = []
     best_losses = []
     average_losses = []
+
+    all_q = []
+    best_q = []
+    average_q = []
 
     visualize_networks(population[:10], runname, 0)
     convert_networks(population[:10], runname, 0)
@@ -48,13 +55,9 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
         #     p_m = .0001
         print("mutation rate: ", p_m)
 
-        f = plt.figure()
-        f.clear()
-        plt.close(f)
-
         if i > 0:
             # Main genetic algorithm code
-            parents = select_best(population, all_losses[i-1], num_parents)
+            parents = select_best_loss(population, all_losses[i-1], num_parents)
             offspring = crossover(parents, gen_size, elite)
             population = mutate(offspring, p_m)
             if elite:
@@ -67,7 +70,9 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
                 save_weights(parents[:10], runname, i)
                 visualize_networks(parents[:10], runname, i)
 
-
+                population_q = evaluate_q(population, normalize=True) # TODO factor in randQ and maxQ
+                record_q(population_q, all_q, best_q, average_q)
+                plot_q(best_q, average_q, runname)
 
         population_loss = evaluate_population(population, samples, goal_is_and)
         record_loss(population_loss, all_losses, best_losses, average_losses)
@@ -77,6 +82,9 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
     plot_loss(best_losses, average_losses, runname)
     save_weights(parents[:10], runname, generations)
     visualize_networks(parents[:10], runname, generations)
+
+    plot_q(best_q, average_q, runname)
+    save_q(best_q[-1], runname)
 
 
 if __name__ == "__main__":
@@ -103,7 +111,7 @@ if __name__ == "__main__":
                     for mvg_frequency in mvg_frequencies:
                         if goal == "fixed": mvg_frequency = 0
                         if config["runname"]: runname = config["runname"]
-                        else: runname = f"elite{elite}_goal{goal}_mvg{mvg_frequency}_gensize{gen_size}_pm{p_m}"
+                        else: runname = f"Qvalue_elite{elite}_goal{goal}_mvg{mvg_frequency}_gensize{gen_size}_pm{p_m}"
                         gen_0 = generate_population(gen_size)
                         main(samples, gen_0, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite)
 
