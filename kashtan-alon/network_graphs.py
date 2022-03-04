@@ -29,7 +29,9 @@ class NetworkGraph:
         self.edge_color_map = {-2: 'darkred', -1: 'r', 0: 'pink', 1: 'c', 2: 'b'}
         self.edge_colors = []
         self.modules = []
-        self.module_color_map = ['orange', 'lime', 'k', 'r', 'y', 'b', 'm', 'gray', 'c', 'g', 'olive']
+        self.module_color_map = ['orange', 'lime', 'k', 'r', 'y', 'b', 'm', 'gray',
+                                 'c', 'g', 'olive', 'pink', 'brown', 'indigo', 'lightgray'
+                                 'teal', 'palegreen', 'skyblue', 'palegoldenrod']
         self.module_colors = []
         self.node_pos = {}
 
