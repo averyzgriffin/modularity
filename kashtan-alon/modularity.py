@@ -11,20 +11,25 @@ from network_graphs import NetworkGraph
 
 def compute_modularity(ng: NetworkGraph):
     realQ = 0
+    total_edges = len(ng.graph.edges)
     for mod in ng.modules:
         num_connections = compute_connections(ng.graph, mod)
-        deg = compute_degrees(mod)
-        currentQ = (num_connections / 42) - (deg / (2 * 42))**2
-        realQ += currentQ
+        deg = compute_degrees(ng.graph, mod)
+        current_q = compute_q(num_connections, total_edges, deg)
+        realQ += current_q
 
-    Qm = normalize_q(realQ)
-    return Qm
+    return realQ
 
 
-def compute_connections(ng: networkx.Graph, module):
+def compute_q(ls, L, ds):
+         # (num_connections / total_edges) - (deg / (2 * total_edges))**2
+    return (ls / L) - (ds / (2*L))**2
+
+
+def compute_connections(G: networkx.Graph, module):
     module_connections = 0
     for node in module:
-        for edge in ng.edges(node):
+        for edge in G.edges(node):
             if edge[1] in module:
                 module_connections += 1
     module_connections /= 2
