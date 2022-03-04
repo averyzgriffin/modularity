@@ -7,6 +7,8 @@ This is called by the main.py module
 import numpy as np
 import random
 from tqdm import tqdm
+from network_graphs import NetworkGraph
+from modularity import compute_modularity
 
 
 def apply_neuron_constraints(network):
