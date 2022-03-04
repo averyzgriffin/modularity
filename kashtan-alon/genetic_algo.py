@@ -56,9 +56,16 @@ def mutate(networks, p_m):
     return networks
 
 
-def select_best(population, scores, num_parents):
+def select_best_loss(population, scores, num_parents):
     # Sorts the population by loss scores from lowest to highest and returns the best
     sort = sorted(range(len(scores)), key=lambda k: scores[k])
+    selected = [population[i] for i in sort[0:num_parents]]
+    return selected
+
+
+def select_best_qvalue(population, scores, num_parents):
+    # Sorts the population by loss scores from lowest to highest and returns the best
+    sort = sorted(range(len(scores)), key=lambda k: scores[k], reverse=True)
     selected = [population[i] for i in sort[0:num_parents]]
     return selected
 

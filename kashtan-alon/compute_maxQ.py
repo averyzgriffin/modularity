@@ -8,7 +8,7 @@ import yaml
 
 from data_save import save_weights, save_q
 from data_viz import plot_q, record_q, visualize_networks
-from genetic_algo import crossover, mutate, select_best
+from genetic_algo import crossover, mutate, select_best_qvalue
 from neural_network import generate_population, evaluate_q
 from network_graphs import convert_networks
 
@@ -31,7 +31,7 @@ def main(population, generations, p_m, checkpoint, runname, elite):
 
         if i > 0:
             # Main genetic algorithm code
-            parents = select_best(population, all_q[i-1], num_parents)
+            parents = select_best_qvalue(population, all_q[i-1], num_parents)
             offspring = crossover(parents, gen_size, elite)
             population = mutate(offspring, p_m)
             if elite:
