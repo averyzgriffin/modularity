@@ -36,8 +36,8 @@ def save_weights(population, runname, gen):
         w_file.close()
 
 
-def save_q(best_q, runname):
+def save_q(q_value, runname):
     makedirs(f"saved_qvalues", exist_ok=True)
     w_file = open(f"saved_qvalues/{runname}.txt", "w")
-    w_file.write(str(best_q))
+    w_file.write(str(q_value))
     w_file.close()
