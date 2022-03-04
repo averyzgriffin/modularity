@@ -25,6 +25,14 @@ def record_loss(population_loss, all_losses, best_losses, average_losses):
     average_losses.append(average_loss)
 
 
+def record_q(population_q, all_q, best_q, average_q):
+    all_q.append(population_q)
+    average_loss = round(sum(population_q) / len(population_q), 3)
+    best_loss = round(max(population_q), 3)
+    best_q.append(best_loss)
+    average_q.append(average_loss)
+
+
 def save_loss_to_csv(best_scores, average_scores, total_scores):
     with open('loss.csv', 'a') as fd:
         writer = csv.writer(fd)
