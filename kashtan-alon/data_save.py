@@ -34,3 +34,10 @@ def save_weights(population, runname, gen):
         w_file = open(f"saved_weights/{runname}/gen_{gen}/network_{i}.json", "w")
         json.dump(population[i], w_file, default=default)
         w_file.close()
+
+
+def save_q(best_q, runname):
+    makedirs(f"saved_qvalues", exist_ok=True)
+    w_file = open(f"saved_qvalues/{runname}.txt", "w")
+    w_file.write(str(best_q))
+    w_file.close()
