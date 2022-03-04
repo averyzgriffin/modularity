@@ -8,7 +8,7 @@ import numpy as np
 import random
 from tqdm import tqdm
 from network_graphs import NetworkGraph
-from modularity import compute_modularity
+from modularity import compute_modularity, normalize_q
 
 
 def apply_neuron_constraints(network):
@@ -77,14 +77,17 @@ def evaluate_population(population, samples, goal_is_and):
         population_loss.append(network["loss"])
     return population_loss
 
-def evaluate_q(population):
+def evaluate_q(population, normalize):
     population_q = []
-    for network in population:
+    for network in tqdm(population, desc="Computing modularity for networks in population"):
         network["q"] = 0
         ng = NetworkGraph(network)
         ng.convert2graph()
         ng.get_data()
-        network["q"] = compute_modularity(ng)
+        qvalue = compute_modularity(ng)
+        if normalize:
+            qvalue = normalize_q(qvalue)
+        network["q"] = qvalue
         population_q.append(network["q"])
     return population_q
 

@@ -44,8 +44,7 @@ def main(population, generations, p_m, checkpoint, runname, elite):
                 save_weights(parents[:10], runname, i)
                 visualize_networks(parents[:10], runname, i)
 
-        # population_loss = evaluate_population(population, samples, goal_is_and)
-        population_q = evaluate_q(population)
+        population_q = evaluate_q(population, normalize=False)
         record_q(population_q, all_q, best_q, average_q)
 
     # Save experiment data at the very end
