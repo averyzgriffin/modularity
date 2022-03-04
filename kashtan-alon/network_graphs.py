@@ -101,11 +101,11 @@ class NetworkGraph:
         plt.close(fig)
 
 
-# Wrapper function to send networks in a population through graph converter
+# Wrapper function to send networks in a population through networkx graph converter
 def convert_networks(population, runname, gen):
     for i in tqdm(range(len(population)), desc="Converting networks to graphs"):
-        makedirs(join('graphs', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
-        file_path = join('graphs', runname, f"gen_{gen}", f'network_{i}').replace("\\", "/")
+        makedirs(join('networkx_graphs', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
+        file_path = join('networkx_graphs', runname, f"gen_{gen}", f'network_{i}').replace("\\", "/")
         ng = NetworkGraph(population[i])
         ng.convert2graph()
         ng.get_data()

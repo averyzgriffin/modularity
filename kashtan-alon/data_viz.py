@@ -60,8 +60,8 @@ def plot_loss(best_scores, average_scores, runname):
 def visualize_networks(population, runname, gen):
     file_path = ""
     for i in tqdm(range(len(population)), desc="Saving plots of networks"):
-        makedirs(join('network_plots', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
-        file_path = join('network_plots', runname, f"gen_{gen}", f'graphviz_model{i}.txt').replace("\\", "/")
+        makedirs(join('graphviz_plots', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
+        file_path = join('graphviz_plots', runname, f"gen_{gen}", f'graphviz_model{i}.txt').replace("\\", "/")
         write_graphviz(population[i], file_path)
         plot_graphviz(file_path)
 
