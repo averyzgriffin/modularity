@@ -8,6 +8,8 @@ import time
 
 from os import makedirs
 from os.path import join
+
+import matplotlib
 from matplotlib import pyplot as plt
 import pickle
 from tqdm import tqdm
@@ -33,6 +35,7 @@ def save_loss_to_csv(best_scores, average_scores, total_scores):
 
 
 def plot_loss(best_scores, average_scores, runname):
+    matplotlib.use("Agg")
     fig = plt.figure(figsize=(24,8))
     ax1 = fig.add_subplot(1, 2, 1)
     ax2 = fig.add_subplot(1, 2, 2)
