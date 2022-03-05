@@ -33,10 +33,10 @@ def apply_threshold(z, t):
 
 
 def build_network():
-    theta1 = np.random.choice([-2,2], (8,8))
-    theta2 = np.random.choice([-2,2], (8,4))
-    theta3 = np.random.choice([-2,2], (4,2))
-    theta4 = np.random.choice([-2,2], (2,1))
+    theta1 = np.random.choice([-1,1], (8,8))
+    theta2 = np.random.choice([-1,1], (8,4))
+    theta3 = np.random.choice([-1,1], (4,2))
+    theta4 = np.random.choice([-1,1], (2,1))
     thrsh1 = np.random.randint(-4,3, (8,1))
     thrsh2 = np.random.randint(-4,3, (4,1))
     thrsh3 = np.random.randint(-4,3, (2,1))
