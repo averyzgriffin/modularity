@@ -20,7 +20,7 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
     matplotlib.use("Agg")
 
     goal_is_and = True
-    num_parents = int(len(population)*.2)
+    num_parents = int(len(population)*.5)
 
     all_losses = []
     best_losses = []
@@ -83,6 +83,8 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
     save_weights(parents[:10], runname, generations)
     visualize_networks(parents[:10], runname, generations)
 
+    population_q = evaluate_q(population, normalize=True)
+    record_q(population_q, all_q, best_q, average_q)
     plot_q(best_q, average_q, runname)
     save_q(best_q[-1], runname)
 
@@ -111,7 +113,7 @@ if __name__ == "__main__":
                     for mvg_frequency in mvg_frequencies:
                         if goal == "fixed": mvg_frequency = 0
                         if config["runname"]: runname = config["runname"]
-                        else: runname = f"Qvalue_elite{elite}_goal{goal}_mvg{mvg_frequency}_gensize{gen_size}_pm{p_m}"
+                        else: runname = f"1no2_Qvalue_elite{elite}_goal{goal}_mvg{mvg_frequency}_gensize{gen_size}_pm{p_m}"
                         gen_0 = generate_population(gen_size)
                         main(samples, gen_0, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite)
 
