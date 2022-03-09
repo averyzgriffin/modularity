@@ -8,10 +8,12 @@ import time
 
 import json
 from os import makedirs
+import os
 from os.path import join
 from matplotlib import pyplot as plt
 import numpy as np
 import pickle
+import shutil
 from tqdm import tqdm
 
 from visualize_nets import write_graphviz, plot_graphviz
@@ -26,6 +28,22 @@ def default(obj):
     if isinstance(obj, np.ndarray):
         return obj.tolist()
     raise TypeError('Not serializable')
+
+
+def clear_dirs(runname):
+    folders = ['graphviz_plots', 'networkx_graphs', 'saved_weights']
+    for folder in folders:
+        dir_path = join(folder, runname).replace("\\", "/")
+        if os.path.exists(dir_path):
+            for filename in os.listdir(dir_path):
+                file_path = os.path.join(dir_path, filename).replace("\\", "/")
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        os.unlink(file_path)
+                    elif os.path.isdir(file_path):
+                        shutil.rmtree(file_path)
+                except Exception as e:
+                    print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
 def save_weights(population, runname, gen):
