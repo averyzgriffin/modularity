@@ -85,14 +85,16 @@ class NetworkGraph:
                     break
 
     def draw_graph(self, file_path, show=False):
-        fig = plt.figure(figsize=(16, 8))
-        ax1 = fig.add_subplot(1, 2, 1)
-        ax2 = fig.add_subplot(1, 2, 2)
-        nx.draw(self.graph, pos=self.node_pos, edge_color=self.edge_colors, node_size=800, with_labels=True, ax=ax1)
+        fig = plt.figure(figsize=(14, 7))
+        ax1 = fig.add_subplot(1, 1, 1)
         nx.draw(self.graph, pos=self.node_pos, edge_color=self.edge_colors, node_color=self.module_colors, node_size=800, with_labels=True,
-                ax=ax2)
-        ax1.set_title('Network converted to Graph')
-        ax2.set_title('Graph color coded by detected modules')
+                ax=ax1)
+        ax1.set_title('Graph color coded by detected modules')
+
+        plt.text(.90, .90, f"Loss: {self.network['''loss''']}", transform=ax1.transAxes)
+
+        if self.network["best"] == "True":
+            plt.text(.90, .80, "*Best Network in Generation", transform=ax1.transAxes)
 
         if show: plt.show()
 
