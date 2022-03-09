@@ -56,7 +56,7 @@ class NetworkGraph:
                         self.graph.add_edges_from([(self.layers[l][i], self.layers[l+1][j], {'weight': self.network['thetas'][l+1][i][j]})])
 
         # Convert output layer to graph
-        self.graph.add_nodes_from([(self.output[0], {'activation': self.network['thresholds'][3][0], 'pos': (650, 160)})])
+        self.graph.add_nodes_from([(self.output[0], {'activation': self.network['thresholds'][len(self.layers)-1][0], 'pos': (650, 160)})])
 
     def get_data(self):
         self.compute_edge_colors()
