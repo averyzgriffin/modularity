@@ -105,6 +105,17 @@ class NetworkGraph:
         plt.close(fig)
 
 
+class LucNetworkGraph(NetworkGraph):
+
+    def __init__(self, network):
+        super().__init__(network)
+
+        self.input = ["x1", "x2", "x3", "x4", "x5", "x6", "x7", "x8"]
+        self.l1 = ["N1", "N2"]
+        self.output = ["output"]
+        self.layers = [self.l1, self.output]
+
+
 # Wrapper function to send networks in a population through networkx graph converter
 def visualize_graph_data(population, runname, gen):
     for i in tqdm(range(len(population)), desc="Converting networks to graphs"):
