@@ -7,6 +7,11 @@ from tqdm import tqdm
 # example = [0, 1, 0, 0,
 #           1, 1, 0, 0]
 
+def default(obj):
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    raise TypeError('Not serializable')
+
 
 def load_samples(num_samples, dir):
     loaded_samples = []
@@ -17,6 +22,13 @@ def load_samples(num_samples, dir):
         loaded_samples.append(sample)
         w_file.close()
     return loaded_samples
+
+
+def save_samples(samples, name):
+    for i in range(len(samples)):
+        w_file = open(f"samples/{name}/sample_{i}.json", "w")
+        json.dump(samples[i], w_file, default=default)
+        w_file.close()
 
 
 def label_sample(sample):
@@ -80,6 +92,15 @@ def generate_samples(n):
                     all_arrays.append(random_sample["pixels"].tolist())
 
     return all_samples
+
+
+def filter_samples(samples, labels: list):
+    filtered_samples = []
+    for sample in samples:
+        for label in labels:
+            if sample["int_label"] == label:
+                filtered_samples.append(sample)
+    return filtered_samples
 
 # all_samples = []
 # for i in range(1000):
