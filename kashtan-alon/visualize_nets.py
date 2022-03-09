@@ -8,14 +8,20 @@ Functions for writing and plotting Graphviz files. Used to visualize the neural 
 # Inspired by
 # https://tgmstat.wordpress.com/2013/06/12/draw-neural-network-diagrams-graphviz/
 
-
+import os
+import shutil
 import graphviz
 from graphviz import Source
 import sys
 
 
 def write_graphviz(network, file_path):
-    layers = [8, 8, 4, 2, 1]
+    # layers = [8, 8, 4, 2, 1]
+    layers = []
+    for theta in network['thetas']:
+        layers.append(len(theta))
+    layers.append(1)
+
 
     layers_str = ["Input"] + ["L1"] + ["L2"] + ["L3"] + ["Output"]
     layers_col = ["none"] + ["none"] * (len(layers) - 2) + ["none"]
