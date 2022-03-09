@@ -55,6 +55,14 @@ def label_sample(sample):
     return sample
 
 
+def generate_simples_samples():
+    left_only = label_sample({"pixels": np.array([1, 1, 1, 1, 0, 0, 0, 0]), "str_label": "tbd", "int_label": 0})
+    right_only = label_sample({"pixels": np.array([0, 0, 0, 0, 1, 1, 1, 1]), "str_label": "tbd", "int_label": 0})
+    both = label_sample({"pixels": np.array([1, 1, 1, 1, 1, 1, 1, 1]), "str_label": "tbd", "int_label": 0})
+    neither = label_sample({"pixels": np.array([0, 0, 0, 0, 0, 0, 0, 0]), "str_label": "tbd", "int_label": 0})
+
+    return [left_only, right_only, both, neither]
+
 def generate_samples(n):
     all_samples = []
     all_arrays = []
