@@ -10,7 +10,7 @@ from data_save import save_weights, save_q
 from data_viz import plot_q, record_q, visualize_networks
 from genetic_algo import crossover, mutate, select_best_qvalue
 from neural_network import generate_population, evaluate_q
-from network_graphs import convert_networks
+from network_graphs import visualize_graph_data
 
 
 def main(population, generations, p_m, checkpoint, runname, elite):
@@ -22,7 +22,7 @@ def main(population, generations, p_m, checkpoint, runname, elite):
     matplotlib.use("Agg")
 
     visualize_networks(population[:10], runname, 0)
-    convert_networks(population[:10], runname, 0)
+    visualize_graph_data(population[:10], runname, 0)
     # save_weights(population[:10], runname, 0)
 
     for i in range(generations):
@@ -39,7 +39,7 @@ def main(population, generations, p_m, checkpoint, runname, elite):
 
             # Save experiment data at every checkpoint
             if i % checkpoint == 0:
-                convert_networks(parents[:10], runname, i)
+                visualize_graph_data(parents[:10], runname, i)
                 plot_q(best_q, average_q, runname)
                 save_weights(parents[:10], runname, i)
                 visualize_networks(parents[:10], runname, i)
@@ -48,7 +48,7 @@ def main(population, generations, p_m, checkpoint, runname, elite):
         record_q(population_q, all_q, best_q, average_q)
 
     # Save experiment data at the very end
-    convert_networks(parents[:10], runname, generations)
+    visualize_graph_data(parents[:10], runname, generations)
     plot_q(best_q, average_q, runname)
     save_weights(parents[:10], runname, generations)
     visualize_networks(parents[:10], runname, generations)

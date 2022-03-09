@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 from data_viz import visualize_solo_network
-from network_graphs import NetworkGraph, convert_networks
+from network_graphs import NetworkGraph, visualize_graph_data
 from modularity import compute_modularity
 
 
