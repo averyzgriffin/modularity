@@ -60,6 +60,7 @@ def select_best_loss(population, scores, num_parents):
     # Sorts the population by loss scores from lowest to highest and returns the best
     sort = sorted(range(len(scores)), key=lambda k: scores[k])
     selected = [population[i] for i in sort[0:num_parents]]
+    selected[0]["best"] = "True"
     return selected
 
 
