@@ -14,7 +14,7 @@ from matplotlib import pyplot as plt
 import pickle
 from tqdm import tqdm
 
-from visualize_nets import write_graphviz, plot_graphviz
+from visualize_nets import write_graphviz, plot_graphviz, delete_graphviz_txts
 
 
 def record_loss(population_loss, all_losses, best_losses, average_losses):
@@ -95,9 +95,11 @@ def visualize_networks(population, runname, gen):
     file_path = ""
     for i in tqdm(range(len(population)), desc="Saving plots of networks"):
         makedirs(join('graphviz_plots', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
-        file_path = join('graphviz_plots', runname, f"gen_{gen}", f'graphviz_model{i}.txt').replace("\\", "/")
+        folder_path = join('graphviz_plots', runname, f"gen_{gen}").replace("\\", "/")
+        file_path = join(folder_path, f'graphviz_model{i}.txt').replace("\\", "/")
         write_graphviz(population[i], file_path)
         plot_graphviz(file_path)
+        delete_graphviz_txts(folder_path)
 
 
 def visualize_solo_network(network, name=None):

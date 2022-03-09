@@ -86,6 +86,15 @@ def plot_graphviz(file_path):
     dot.render(view=False)
 
 
+def delete_graphviz_txts(folder_path):
+    for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename).replace("\\", "/")
+        try:
+            if filename.endswith(".txt"):
+                os.remove(file_path)
+        except Exception as e:
+            print('Failed to delete %s. Reason: %s' % (file_path, e))
+
 
 
 
