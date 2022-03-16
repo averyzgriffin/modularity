@@ -1,36 +1,46 @@
 import numpy as np
 import random
+from generate_labeled_data import generate_samples, save_samples, load_samples, filter_samples
+from neural_network import evaluate_population
 
 
-network_sample = []
+luc_samples = generate_samples(256)
+filtered_samples = filter_samples(luc_samples, [3])
 
-t = np.array([[1,2],[3,4],[5,6]])
-t_ = t.transpose()
-# x = np.ones((8,1))
+theta1 = np.array([ [1, 0], [1, 0], [1, 0], [1, 0],
+                   [0, 1],[0, 1],[0, 1],[0, 1]] )
+theta2 = np.array([ [1],
+                    [1]] )
+thrsh1 = np.ones((2, 1))
+thrsh2 = np.ones((1, 1))
 
-# Testing evaluation (using values from paper fig 5)
-x = np.array([1,1,0,0,0,0,1,1])
+thetas = [theta1, theta2]
+thresholds = [thrsh1, thrsh2]
 
-thr1 = np.array([0,1,0,2,0,1]).reshape(6,1)
-thr2 = np.array([2,2,0,2]).reshape(4,1)
-thr3 = np.array([1,1]).reshape(2,1)
-thr4 = np.array([1]).reshape(1,1)
+network = {"thetas": thetas, "thresholds": thresholds, "loss": 0}
 
-theta1 = np.array([[-1,-1,-1,0,0,0],[-1,-1,-1,0,0,0],[0,0,1,0,0,0],[1,-1,0,0,0,0],
-                   [0,0,0,0,1,-1],[0,0,0,1,0,0],[0,0,0,1,-1,-1],[0,0,0,1,1,1]])
-theta2 = np.array([[2,0,0,0],[-1,-2,0,0],[0,-1,0,0],
-                   [0,0,-1,1],[0,0,-2,1],[0,0,0,-1]])
-theta3 = np.array([[-1,0],[2,0],
-                   [0,2],[0,1]])
-theta4 = np.array([[1],[1]])
-
-z1 = np.dot(x.transpose(), theta1)
-z2 = np.dot(z1, theta2)
-z3 = np.dot(z2, theta3)
-z4 = np.dot(z3, theta4)
-
-print(z1, z2, z3, z4)
-y = 2
+loss = evaluate_population([network], filtered_samples, False)
+print("loss ", loss)
+# thr1 = np.array([0,1,0,2,0,1]).reshape(6,1)
+# thr2 = np.array([2,2,0,2]).reshape(4,1)
+# thr3 = np.array([1,1]).reshape(2,1)
+# thr4 = np.array([1]).reshape(1,1)
+#
+# theta1 = np.array([[-1,-1,-1,0,0,0],[-1,-1,-1,0,0,0],[0,0,1,0,0,0],[1,-1,0,0,0,0],
+#                    [0,0,0,0,1,-1],[0,0,0,1,0,0],[0,0,0,1,-1,-1],[0,0,0,1,1,1]])
+# theta2 = np.array([[2,0,0,0],[-1,-2,0,0],[0,-1,0,0],
+#                    [0,0,-1,1],[0,0,-2,1],[0,0,0,-1]])
+# theta3 = np.array([[-1,0],[2,0],
+#                    [0,2],[0,1]])
+# theta4 = np.array([[1],[1]])
+#
+# z1 = np.dot(x.transpose(), theta1)
+# z2 = np.dot(z1, theta2)
+# z3 = np.dot(z2, theta3)
+# z4 = np.dot(z3, theta4)
+#
+# print(z1, z2, z3, z4)
+# y = 2
 
 
 # thr1 = np.random.randint(-4,3, (8,1))
