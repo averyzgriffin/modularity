@@ -8,9 +8,9 @@ from matplotlib import pyplot as plt
 import numpy as np
 import yaml
 
-from data_save import save_weights, save_q
+from data_save import save_weights, save_q, clear_dirs
 from data_viz import plot_loss, record_loss, visualize_networks, plot_q, record_q
-from generate_labeled_data import load_samples, filter_samples
+from generate_labeled_data import load_samples, filter_samples, generate_samples
 from genetic_algo import crossover, mutate, select_best_loss
 from neural_network import evaluate_population, generate_population, evaluate_q
 from graphs import visualize_graph_data, NetworkGraph
@@ -19,8 +19,11 @@ from graphs import visualize_graph_data, NetworkGraph
 def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite):
     matplotlib.use("Agg")
 
+    # count = 0
+    detected_change = False
     goal_is_and = True
-    num_parents = int(len(population)*.2)
+    parents_perc = .30
+    num_parents = int(len(population)*parents_perc)
 
     all_losses = []
     best_losses = []
@@ -46,8 +49,8 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
             else: print("Goal is L OR R")
 
         # # Varying the mutation rate
-        # if i % 1000 == 0 and i != 0:
-        #     p_m /= 10
+        if i % 4000 == 0 and i != 0:
+            p_m /= 10
         # if i == 500:
         #     p_m = .01
         # if i == 1000:
@@ -59,26 +62,44 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
         if i > 0:
             # Main genetic algorithm code
             parents = select_best_loss(population, all_losses[i-1], num_parents)
-            offspring = crossover(parents, gen_size, elite)
+            offspring = crossover(parents, gen_size, elite, parents_perc)
             population = mutate(offspring, p_m)
             if elite:
                 population = parents + population
 
             # Stuff we only want happening every checkpoint. e.g. saving experiment data
             if i % checkpoint == 0:
-                visualize_graph_data(parents[:10], runname, i)
+                # visualize_graph_data(parents[:10], runname, i)
                 plot_loss(best_losses, average_losses, runname)
-                save_weights(parents[:10], runname, i)
-                visualize_networks(parents[:10], runname, i)
+                # save_weights(parents[:10], runname, i)
+                # visualize_networks(parents[:10], runname, i)
 
                 # Computing modularity metrics. Expensive operation.
                 population_q = evaluate_q(population, normalize=True) # TODO factor in randQ and maxQ
                 record_q(population_q, all_q, best_q, average_q)
                 plot_q(best_q, average_q, runname)
 
+        if detected_change:
+            print("Detected change post")
+            visualize_graph_data(parents[:5], runname, i-1)
+            save_weights(parents[:5], runname, i - 1)
+            visualize_networks(parents[:5], runname, i - 1)
+            detected_change = False
+
         # Compute loss each generation
         population_loss = evaluate_population(population, samples, goal_is_and)
         record_loss(population_loss, all_losses, best_losses, average_losses)
+        print("Loss: ", best_losses[i])
+
+        if i>0:
+            if best_losses[i] != best_losses[i-1]:
+                print("Detected change prior")
+                visualize_graph_data(parents[:5], runname, i - 1)
+                save_weights(parents[:5], runname, i-1)
+                visualize_networks(parents[:5], runname, i-1)
+                detected_change = True
+        # if best_losses[i] == 0: count += 1
+        # if count > 10: break
 
     # Save experiment data at the very end
     visualize_graph_data(parents[:10], runname, generations)
@@ -106,10 +127,13 @@ if __name__ == "__main__":
     mvg_frequencies = config["mvg_frequency"]
     checkpoint = config["checkpoint"]
     elites = config["elite"]
+    sprint_name = config["sprint_name"]
 
     # Main loop for running experiment. Loops through hyperparamters
     samples = load_samples(num_samples, "samples")
-    filtered_samples = filter_samples(samples, [3])
+    # samples = generate_samples(61)
+    # filtered_samples = filter_samples(samples, [3])
+
     for gen_size in gen_sizes:
         for goal in goals:
             for elite in elites:
@@ -117,9 +141,11 @@ if __name__ == "__main__":
                     for mvg_frequency in mvg_frequencies:
                         if goal == "fixed": mvg_frequency = 0
                         if config["runname"]: runname = config["runname"]
-                        else: runname = f"luc_elite{elite}_goal{goal}_mvg{mvg_frequency}_gensize{gen_size}_pm{p_m}"
+                        else: runname = f"elite{elite}_goal{goal}_mvg{mvg_frequency}_gensize{gen_size}_pm{p_m}"
+
+                        clear_dirs(runname)
                         gen_0 = generate_population(gen_size)
-                        main(filtered_samples, gen_0, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite)
+                        main(samples, gen_0, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite)
 
 
 
