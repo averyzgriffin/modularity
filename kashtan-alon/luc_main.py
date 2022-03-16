@@ -11,9 +11,9 @@ import yaml
 from data_save import save_weights, save_q, clear_dirs
 from data_viz import plot_loss, record_loss, visualize_networks, plot_q, record_q
 from generate_labeled_data import generate_samples, load_samples, filter_samples, generate_simples_samples
-from genetic_algo import crossover, mutate, select_best_loss
+from genetic_algo import crossover, luc_mutate, select_best_loss
 from neural_network import evaluate_population, evaluate_q, luc_generate_population
-from network_graphs import visualize_graph_data
+from graphs import visualize_graph_data, LucNetworkGraph
 
 
 def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite):
@@ -34,8 +34,8 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
     average_q = []
 
     visualize_networks(population[:20], runname, 0)
-    visualize_graph_data(population[:20], runname, 0)
-    # save_weights(population, runname, 0)
+    visualize_graph_data(population[:20], runname, 0, LucNetworkGraph)
+    save_weights(population, runname, 0)
 
     for i in range(generations):
         print(f"\n ---- Run {runname}. Starting Gen {i}")
@@ -63,25 +63,25 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
             # Main genetic algorithm code
             parents = select_best_loss(population, all_losses[i-1], num_parents)
             offspring = crossover(parents, gen_size, elite, parents_perc)
-            population = mutate(offspring, p_m)
+            population = luc_mutate(offspring, p_m)
             if elite:
                 population = parents + population
 
             # Stuff we only want happening every checkpoint. e.g. saving experiment data
             if i % checkpoint == 0:
                 plot_loss(best_losses, average_losses, runname)
-                # visualize_graph_data(parents, runname, i-1)
-                # visualize_networks(parents, runname, i)
-                # save_weights(parents[:10], runname, i)
+                visualize_graph_data(parents, runname, i-1, LucNetworkGraph)
+                visualize_networks(parents, runname, i)
+                save_weights(parents[:10], runname, i) # TODO needs fixed. Currently overwriting
 
                 # Computing modularity metrics. Expensive operation.
-                population_q = evaluate_q(population, normalize=True) # TODO factor in randQ and maxQ
+                population_q = evaluate_q(population, True, LucNetworkGraph) # TODO factor in randQ and maxQ
                 record_q(population_q, all_q, best_q, average_q)
                 plot_q(best_q, average_q, runname)
 
         if detected_change:
             print("Detected change post")
-            visualize_graph_data(parents, runname, i-1)
+            visualize_graph_data(parents, runname, i-1, LucNetworkGraph)
             detected_change = False
 
         # Compute loss each generation
@@ -92,7 +92,7 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
         if i>0:
             if best_losses[i] != best_losses[i-1]:
                 print("Detected change prior")
-                visualize_graph_data(parents, runname, i - 1)
+                visualize_graph_data(parents, runname, i - 1, LucNetworkGraph)
                 detected_change = True
 
         if best_losses[i] == 0:
@@ -102,12 +102,12 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
             break
 
     # Save experiment data at the very end
-    visualize_graph_data(parents[:], runname, generations)
+    visualize_graph_data(parents[:], runname, generations, LucNetworkGraph)
     plot_loss(best_losses, average_losses, runname)
     save_weights(parents[:10], runname, generations)
     visualize_networks(parents[:10], runname, generations)
 
-    population_q = evaluate_q(population, normalize=True)
+    population_q = evaluate_q(population, True, LucNetworkGraph)
     record_q(population_q, all_q, best_q, average_q)
     plot_q(best_q, average_q, runname)
     save_q(best_q[-1], runname)
@@ -131,8 +131,8 @@ if __name__ == "__main__":
     # Main loop for running experiment. Loops through hyperparamters
     # samples = load_samples(num_samples, "samples")
     # filtered_samples = filter_samples(luc_samples, [3, 1, 2])
-    # luc_samples = generate_samples(61)
-    luc_samples = generate_simples_samples()
+    luc_samples = generate_samples(61)
+    # luc_samples = generate_simples_samples()
 
     for gen_size in gen_sizes:
         for goal in goals:
