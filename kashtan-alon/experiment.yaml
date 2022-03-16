@@ -1,17 +1,16 @@
 # Config settings for main experiment
 
-sprint_name:
-runname: del1
-num_samples: 100
-gen_sizes: [100]
+runname: 2013paper_001
+num_samples: 256
+gen_sizes: [1000]
 mutation_rates: [.9]
 generations: 10000
 
 # TODO - change how often the goal changes
 
-goals: ["fixed"]
+goals: ["mvg"]
 mvg_frequency: [20]
-checkpoint: 100
+checkpoint: 250
 elite: [True]
 
 
