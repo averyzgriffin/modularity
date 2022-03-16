@@ -1,14 +1,22 @@
 # Config settings for main experiment
 
-runname:
+sprint_name:
+runname: del1
 num_samples: 100
-gen_sizes: [60]
-mutation_rates: [.001]
-generations: 3000
+gen_sizes: [100]
+mutation_rates: [.9]
+generations: 10000
 
 # TODO - change how often the goal changes
 
-goals: ["mvg", "fixed"]
-mvg_frequency: [200, 2]
-checkpoint: 150
-elite: [True, False]
+goals: ["fixed"]
+mvg_frequency: [20]
+checkpoint: 100
+elite: [True]
+
+
+loss_func: "L vs R"
+threshold_output: False
+fixate_thresholds: False
+fixate_final_weights: False
+weights_domain: (0,1) # or original
