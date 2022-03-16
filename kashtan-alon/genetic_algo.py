@@ -8,7 +8,7 @@ import copy
 import numpy as np
 import random
 
-from neural_network import apply_neuron_constraints
+from neural_network import NeuralNetwork
 
 
 def crossover(parents, gen_size, elite, parents_perc):
