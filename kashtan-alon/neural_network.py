@@ -39,15 +39,15 @@ class NeuralNetwork:
             config = yaml.safe_load(file)
 
     def build_network(self):
-        theta1 = np.random.choice([0,1], (8,8))
-        theta2 = np.random.choice([0,1], (8,4))
-        theta3 = np.random.choice([0,1], (4,2))
-        theta4 = np.ones((2,1))
-        # theta4 = np.random.choice([-1,1], (2,1))
-        thrsh1 = np.random.randint(0,3, (8,1))
-        thrsh2 = np.random.randint(0,3, (4,1))
-        thrsh3 = np.random.randint(0,3, (2,1))
-        thrsh4 = np.random.randint(0,1, (1,1))
+        theta1 = np.random.randint(-2,2, (8,8))
+        theta2 = np.random.randint(-2,2, (8,4))
+        theta3 = np.random.randint(-2,2, (4,2))
+        theta4 = np.random.randint(-2,2, (2,1))
+        # theta4 = np.ones((2,1))
+        thrsh1 = np.random.randint(-2,2, (8,1))
+        thrsh2 = np.random.randint(-2,2, (4,1))
+        thrsh3 = np.random.randint(-2,2, (2,1))
+        thrsh4 = np.random.randint(-2,2, (1,1))
 
         self.thetas = [theta1, theta2, theta3, theta4]
         self.thresholds = [thrsh1, thrsh2, thrsh3, thrsh4]
@@ -55,10 +55,11 @@ class NeuralNetwork:
         self.apply_neuron_constraints()
         # self.network = {"thetas": self.thetas, "thresholds": self.thresholds, "loss": 0}
 
-    def evaluate_network(self, loss_func, sample, goal_is_and):
+    def evaluate_network(self, sample, goal_is_and):
         x = sample["pixels"]
-        prediction = self.feed_forward(x)
-        loss = self.calculate_loss(loss_func, prediction, sample, goal_is_and)
+        prediction = self.feed_forward_tanh(x)
+        # prediction = self.feed_forward(x)
+        loss = self.calculate_loss(prediction, sample, goal_is_and)
         self.loss += loss
 
     def feed_forward(self, x):
@@ -74,6 +75,26 @@ class NeuralNetwork:
                 self.apply_threshold(z, ts[i])
         return z
 
+    def feed_forward_tanh(self, x):
+        thetas = self.thetas
+        ts = self.thresholds
+        for i in range(len(thetas)):
+            if i == 0:
+                z = np.dot(x.transpose(), thetas[i])
+            else:
+                z = np.dot(z, thetas[i])
+
+            # temp = ts[i]
+            a = np.sum([z.reshape(len(z),1), ts[i]], axis=0)
+            z = self.apply_tanh(a).reshape(len(a))
+        if z >= 0: z = 1
+        else: z = 0
+        return z
+
+    def apply_tanh(self, z):
+        a = np.tanh(20*z)
+        return a
+
     @staticmethod
     def apply_threshold(z, t):
         for i in range(len(z)):
@@ -82,9 +103,9 @@ class NeuralNetwork:
             else:
                 z[i] = 0
 
-    def calculate_loss(self, loss_func, prediction, sample, goal_is_and):
-        # loss = self.original_loss(prediction, sample, goal_is_and)
-        loss = self.LandR_vs_LorR_loss(prediction, sample, goal_is_and)
+    def calculate_loss(self, prediction, sample, goal_is_and):
+        loss = self.original_loss(prediction, sample, goal_is_and)
+        # loss = self.LandR_vs_LorR_loss(prediction, sample, goal_is_and)
         return loss
 
     @staticmethod
