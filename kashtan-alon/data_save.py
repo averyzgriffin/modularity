@@ -50,7 +50,8 @@ def save_weights(population, runname, gen):
     makedirs(f"saved_weights/{runname}/gen_{gen}", exist_ok=True)
     for i in range(len(population)):
         w_file = open(f"saved_weights/{runname}/gen_{gen}/network_{i}.json", "w")
-        json.dump(population[i], w_file, default=default)
+        json.dump(population[i].thetas, w_file, default=default)
+        json.dump(population[i].thresholds, w_file, default=default)
         w_file.close()
 
 
