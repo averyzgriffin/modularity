@@ -78,7 +78,7 @@ def generate_samples(n):
         if random_sample["pixels"].tolist() in all_arrays:
             continue
         else:
-            if random_sample["int_label"] == 3 and both_count < 30:
+            if random_sample["int_label"] == 3:# and both_count < 30:
                 # if both_count < 42:
                 both_count += 1
                 all_samples.append(random_sample)
