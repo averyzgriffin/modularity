@@ -48,15 +48,9 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
             if goal_is_and: print(f"Goal is L AND R")
             else: print("Goal is L OR R")
 
-        # # Varying the mutation rate
-        if i % 4000 == 0 and i != 0:
+        # Varying the mutation rate
+        if i % 10000 == 0 and i != 0:
             p_m /= 10
-        # if i == 500:
-        #     p_m = .01
-        # if i == 1000:
-        #     p_m = .001
-        # if i == 5000:
-        #     p_m = .0001
         print("mutation rate: ", p_m)
 
         if i > 0:
@@ -70,9 +64,9 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
             # Stuff we only want happening every checkpoint. e.g. saving experiment data
             if i % checkpoint == 0:
                 # visualize_graph_data(parents[:10], runname, i)
-                plot_loss(best_losses, average_losses, runname)
                 # save_weights(parents[:10], runname, i)
                 # visualize_networks(parents[:10], runname, i)
+                plot_loss(best_losses, average_losses, runname)
 
                 # Computing modularity metrics. Expensive operation.
                 population_q = evaluate_q(population, normalize=True) # TODO factor in randQ and maxQ
@@ -98,8 +92,6 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
                 save_weights(parents[:5], runname, i-1)
                 visualize_networks(parents[:5], runname, i-1)
                 detected_change = True
-        # if best_losses[i] == 0: count += 1
-        # if count > 10: break
 
     # Save experiment data at the very end
     visualize_graph_data(parents[:10], runname, generations)
@@ -127,11 +119,10 @@ if __name__ == "__main__":
     mvg_frequencies = config["mvg_frequency"]
     checkpoint = config["checkpoint"]
     elites = config["elite"]
-    sprint_name = config["sprint_name"]
 
     # Main loop for running experiment. Loops through hyperparamters
-    samples = load_samples(num_samples, "samples")
-    # samples = generate_samples(61)
+    # samples = load_samples(num_samples, "samples")
+    samples = generate_samples(256)
     # filtered_samples = filter_samples(samples, [3])
 
     for gen_size in gen_sizes:
