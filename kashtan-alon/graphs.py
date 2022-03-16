@@ -44,19 +44,19 @@ class NetworkGraph:
         for i in range(len(self.input)):
             self.graph.add_nodes_from([(self.input[i], {'activation': 1, 'pos': (0, 35 * (i + 1))})])
             for j in range(len(self.l1)):
-                if self.network['thetas'][0][i][j] != 0:
-                    self.graph.add_edges_from([(self.input[i], self.l1[j], {'weight': self.network['thetas'][0][i][j]})])
+                if self.network.thetas[0][i][j] != 0:
+                    self.graph.add_edges_from([(self.input[i], self.l1[j], {'weight': self.network.thetas[0][i][j]})])
 
         # Convert hidden layers to graph
         for l in range(len(self.layers)-1):
             for i in range(len(self.layers[l])):
-                self.graph.add_nodes_from([(self.layers[l][i], {'activation': self.network['thresholds'][0][i], 'pos': (160*(l+1), 35 * (i + 1 + (1.3*l)))})])
+                self.graph.add_nodes_from([(self.layers[l][i], {'activation': self.network.thresholds[0][i], 'pos': (160*(l+1), 35 * (i + 1 + (1.3*l)))})])
                 for j in range(len(self.layers[l+1])):
-                    if self.network['thetas'][l+1][i][j] != 0:
-                        self.graph.add_edges_from([(self.layers[l][i], self.layers[l+1][j], {'weight': self.network['thetas'][l+1][i][j]})])
+                    if self.network.thetas[l+1][i][j] != 0:
+                        self.graph.add_edges_from([(self.layers[l][i], self.layers[l+1][j], {'weight': self.network.thetas[l+1][i][j]})])
 
         # Convert output layer to graph
-        self.graph.add_nodes_from([(self.output[0], {'activation': self.network['thresholds'][len(self.layers)-1][0], 'pos': (650, 160)})])
+        self.graph.add_nodes_from([(self.output[0], {'activation': self.network.thresholds[len(self.layers)-1][0], 'pos': (650, 160)})])
 
     def get_data(self):
         self.compute_edge_colors()
@@ -91,9 +91,9 @@ class NetworkGraph:
                 ax=ax1)
         ax1.set_title('Graph color coded by detected modules')
 
-        plt.text(.90, .90, f"Loss: {self.network['''loss''']}", transform=ax1.transAxes)
+        plt.text(.90, .90, f"Loss: {self.network.loss}", transform=ax1.transAxes)
 
-        if self.network["best"] == "True":
+        if self.network.best == "True":
             plt.text(.90, .80, "*Best Network in Generation", transform=ax1.transAxes)
 
         if show: plt.show()
@@ -117,11 +117,11 @@ class LucNetworkGraph(NetworkGraph):
 
 
 # Wrapper function to send networks in a population through networkx graph converter
-def visualize_graph_data(population, runname, gen):
+def visualize_graph_data(population, runname, gen, graph=NetworkGraph):
     for i in tqdm(range(len(population)), desc="Converting networks to graphs"):
         makedirs(join('networkx_graphs', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
         file_path = join('networkx_graphs', runname, f"gen_{gen}", f'network_{i}').replace("\\", "/")
-        ng = NetworkGraph(population[i])
+        ng = graph(population[i])
         ng.convert2graph()
         ng.get_data()
         ng.draw_graph(file_path)
