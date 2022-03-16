@@ -13,7 +13,7 @@ from data_viz import plot_loss, record_loss, visualize_networks, plot_q, record_
 from generate_labeled_data import load_samples, filter_samples
 from genetic_algo import crossover, mutate, select_best_loss
 from neural_network import evaluate_population, generate_population, evaluate_q
-from network_graphs import visualize_graph_data
+from graphs import visualize_graph_data, NetworkGraph
 
 
 def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_frequency, elite):

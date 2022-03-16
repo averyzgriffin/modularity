@@ -10,7 +10,7 @@ from data_save import save_weights, save_q
 from data_viz import plot_q, record_q, visualize_networks
 from genetic_algo import crossover, mutate, select_best_qvalue
 from neural_network import generate_population, evaluate_q
-from network_graphs import visualize_graph_data
+from graphs import visualize_graph_data
 
 
 def main(population, generations, p_m, checkpoint, runname, elite):

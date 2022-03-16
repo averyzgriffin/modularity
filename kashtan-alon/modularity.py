@@ -6,7 +6,7 @@ Algorithm copied from the bio paper.
 import networkx
 import json
 import numpy as np
-from network_graphs import NetworkGraph
+from graphs import NetworkGraph
 from tqdm import tqdm
 # from neural_network import build_network, apply_neuron_constraints
 
