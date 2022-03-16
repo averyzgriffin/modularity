@@ -18,10 +18,9 @@ import sys
 def write_graphviz(network, file_path):
     # layers = [8, 8, 4, 2, 1]
     layers = []
-    for theta in network['thetas']:
+    for theta in network.thetas:
         layers.append(len(theta))
     layers.append(1)
-
 
     layers_str = ["Input"] + ["L1"] + ["L2"] + ["L3"] + ["Output"]
     layers_col = ["none"] + ["none"] * (len(layers) - 2) + ["none"]
@@ -60,7 +59,7 @@ def write_graphviz(network, file_path):
                 print("l{}{} [label=x_{}]".format(i + 1, a, a), end=' ')
         else:
             for a in range(layers[i]):
-                print("l{}{} [label={}]".format(i + 1, a, network["thresholds"][i-1][a][0]), end=' ')
+                print("l{}{} [label={}]".format(i + 1, a, network.thresholds[i-1][a][0]), end=' ')
 
         print(";")
         print(("\t\tlabel = {};".format(layers_str[i])))
@@ -71,14 +70,14 @@ def write_graphviz(network, file_path):
     for i in range(1, len(layers)):
         for a in range(layers[i - 1]):
             for b in range(layers[i]):
-                temp = network["thetas"][i-1][a][b]
-                if network["thetas"][i-1][a][b] == 1:
+                temp = network.thetas[i-1][a][b]
+                if network.thetas[i-1][a][b] == 1:
                     print("\tl{}{} -> l{}{} [color=\"cyan\"]".format(i, a, i + 1, b))
-                elif network["thetas"][i-1][a][b] == 2:
+                elif network.thetas[i-1][a][b] == 2:
                     print("\tl{}{} -> l{}{} [color=\"cyan4\"]".format(i, a, i + 1, b))
-                elif network["thetas"][i-1][a][b] == -1:
+                elif network.thetas[i-1][a][b] == -1:
                     print("\tl{}{} -> l{}{} [color=\"red\"]".format(i, a, i + 1, b))
-                elif network["thetas"][i-1][a][b] == -2:
+                elif network.thetas[i-1][a][b] == -2:
                     print("\tl{}{} -> l{}{} [color=\"red4\"]".format(i, a, i + 1, b))
 
     print("}")
