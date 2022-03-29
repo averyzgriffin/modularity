@@ -10,7 +10,7 @@ import yaml
 
 from data_save import save_weights, save_q
 from data_viz import plot_loss, record_loss, visualize_networks, plot_q, record_q
-from generate_labeled_data import load_samples
+from generate_labeled_data import load_samples, generate_samples
 from genetic_algo import crossover, mutate, select_best_loss
 from neural_network import evaluate_population, generate_population, evaluate_q
 from network_graphs import convert_networks
@@ -105,7 +105,9 @@ if __name__ == "__main__":
     elites = config["elite"]
 
     # Main loop for running experiment. Loops through hyperparamters
-    samples = load_samples(num_samples, "samples")
+    # samples = load_samples(num_samples, "samples")
+    samples = generate_samples(num_samples)
+
     for gen_size in gen_sizes:
         for goal in goals:
             for elite in elites:

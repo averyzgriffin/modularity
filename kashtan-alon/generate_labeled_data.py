@@ -59,25 +59,25 @@ def generate_samples(n):
             continue
         else:
             if random_sample["int_label"] == 3:
-                if both_count < 42:
-                    both_count += 1
-                    all_samples.append(random_sample)
-                    all_arrays.append(random_sample["pixels"].tolist())
+                # if both_count < 42:
+                both_count += 1
+                all_samples.append(random_sample)
+                all_arrays.append(random_sample["pixels"].tolist())
             elif random_sample["int_label"] == 1:
-                if left_count < 21:
-                    left_count += 1
-                    all_samples.append(random_sample)
-                    all_arrays.append(random_sample["pixels"].tolist())
+                # if left_count < 21:
+                left_count += 1
+                all_samples.append(random_sample)
+                all_arrays.append(random_sample["pixels"].tolist())
             elif random_sample["int_label"] == 2:
-                if right_count < 21:
-                    right_count += 1
-                    all_samples.append(random_sample)
-                    all_arrays.append(random_sample["pixels"].tolist())
+                # if right_count < 21:
+                right_count += 1
+                all_samples.append(random_sample)
+                all_arrays.append(random_sample["pixels"].tolist())
             elif random_sample["int_label"] == 0:
-                if True: #neither_count <= left_count and neither_count <= right_count and neither_count <= both_count:
-                    neither_count += 1
-                    all_samples.append(random_sample)
-                    all_arrays.append(random_sample["pixels"].tolist())
+                # if True: #neither_count <= left_count and neither_count <= right_count and neither_count <= both_count:
+                neither_count += 1
+                all_samples.append(random_sample)
+                all_arrays.append(random_sample["pixels"].tolist())
 
     return all_samples
 
