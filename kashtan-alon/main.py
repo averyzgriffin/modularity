@@ -9,7 +9,7 @@ import numpy as np
 import yaml
 
 from data_save import save_weights, save_q, clear_dirs
-from data_viz import plot_loss, record_loss, visualize_networks, plot_q, record_q
+from data_viz import plot_loss, record_loss, visualize_networks, plot_q, record_q, record_wrong
 from generate_labeled_data import load_samples, filter_samples, generate_samples
 from genetic_algo import crossover, mutate, select_best_loss
 from neural_network import evaluate_population, generate_population, evaluate_q
@@ -22,7 +22,7 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
     # count = 0
     detected_change = False
     goal_is_and = True
-    parents_perc = .30
+    parents_perc = .50
     num_parents = int(len(population)*parents_perc)
 
     all_losses = []
@@ -49,7 +49,7 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
             else: print("Goal is L OR R")
 
         # Varying the mutation rate
-        if i % 10000 == 0 and i != 0:
+        if i % 200 == 0 and i != 0:
             p_m /= 10
         print("mutation rate: ", p_m)
 
@@ -63,9 +63,9 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
 
             # Stuff we only want happening every checkpoint. e.g. saving experiment data
             if i % checkpoint == 0:
-                # visualize_graph_data(parents[:10], runname, i)
-                # save_weights(parents[:10], runname, i)
-                # visualize_networks(parents[:10], runname, i)
+                visualize_graph_data(parents[:10], runname, i)
+                save_weights(parents[:10], runname, i)
+                visualize_networks(parents[:10], runname, i)
                 plot_loss(best_losses, average_losses, runname)
 
                 # Computing modularity metrics. Expensive operation.
@@ -73,25 +73,35 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
                 record_q(population_q, all_q, best_q, average_q)
                 plot_q(best_q, average_q, runname)
 
-        if detected_change:
-            print("Detected change post")
-            visualize_graph_data(parents[:5], runname, i-1)
-            save_weights(parents[:5], runname, i - 1)
-            visualize_networks(parents[:5], runname, i - 1)
-            detected_change = False
+        # if detected_change:
+        #     print("Detected change post")
+        #     visualize_graph_data(parents[:5], runname, i-1)
+        #     save_weights(parents[:5], runname, i - 1)
+        #     visualize_networks(parents[:5], runname, i - 1)
+        #     detected_change = False
 
         # Compute loss each generation
-        population_loss = evaluate_population(population, samples, goal_is_and)
+        population_loss, pop_wrong = evaluate_population(population, samples, goal_is_and)
         record_loss(population_loss, all_losses, best_losses, average_losses)
+        wrong_breakdown = record_wrong(population_loss, pop_wrong)
         print("Loss: ", best_losses[i])
+        print("Average # Wrong Both: ", wrong_breakdown[0])
+        print("Average # Wrong Left: ", wrong_breakdown[1])
+        print("Average # Wrong Right: ", wrong_breakdown[2])
+        print("Average # Wrong None: ", wrong_breakdown[3])
+        print("Best # Wrong Both: ", wrong_breakdown[4])
+        print("Best # Wrong Left: ", wrong_breakdown[5])
+        print("Best # Wrong Right: ", wrong_breakdown[6])
+        print("Best # Wrong None: ", wrong_breakdown[7])
+        # print("Wrong Counts: ", min(pop_wrong[0])
 
-        if i>0:
-            if best_losses[i] != best_losses[i-1]:
-                print("Detected change prior")
-                visualize_graph_data(parents[:5], runname, i - 1)
-                save_weights(parents[:5], runname, i-1)
-                visualize_networks(parents[:5], runname, i-1)
-                detected_change = True
+        # if i>0:
+        #     if best_losses[i] != best_losses[i-1]:
+        #         print("Detected change prior")
+        #         visualize_graph_data(parents[:5], runname, i - 1)
+        #         save_weights(parents[:5], runname, i-1)
+        #         visualize_networks(parents[:5], runname, i-1)
+        #         detected_change = True
 
     # Save experiment data at the very end
     visualize_graph_data(parents[:10], runname, generations)
@@ -121,8 +131,7 @@ if __name__ == "__main__":
     elites = config["elite"]
 
     # Main loop for running experiment. Loops through hyperparamters
-    # samples = load_samples(num_samples, "samples")
-    samples = generate_samples(256)
+    samples = generate_samples(256)  # samples = load_samples(num_samples, "samples")
     # filtered_samples = filter_samples(samples, [3])
 
     for gen_size in gen_sizes:

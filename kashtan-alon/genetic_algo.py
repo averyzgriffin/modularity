@@ -46,11 +46,25 @@ def mutate(networks: list[NeuralNetwork], p_m):
                     for w in range(len(networks[i].thetas[l].transpose()[n])):
                         # Sample randomly. If less than the p_m, mutate the weight.
                         if random.uniform(0,1) < p_m:
-                            networks[i].thetas[l].transpose()[n][w] = random.randint(-2, 2)
+                            # networks[i].thetas[l].transpose()[n][w] = random.randint(-2, 2)
+                            current_value = networks[i].thetas[l].transpose()[n][w]
+                            adjustment = random.choice([-1, 1])
+                            if -2 <= current_value + adjustment <= 2:
+                                networks[i].thetas[l].transpose()[n][w] += adjustment
+                            else:
+                                networks[i].thetas[l].transpose()[n][w] -= adjustment
                     # Sample randomly. If less than the p_m, mutate the threshold value.
                     if random.uniform(0, 1) < p_m:
-                        if l < 3: networks[i].thresholds[l][n] = random.randint(-2, 2)
-                        else: networks[i].thresholds[l][n] = random.randint(-2, 2)
+                        # if l < 3:
+                        # networks[i].thresholds[l][n] = random.randint(-2, 2)
+                        current_value = networks[i].thresholds[l][n]
+                        adjustment = random.choice([-1, 1])
+                        if -2 <= current_value + adjustment <= 2:
+                            networks[i].thresholds[l][n] += adjustment
+                        else:
+                            networks[i].thresholds[l][n] -= adjustment
+                        # else:
+                        #     networks[i].thresholds[l][n] = random.randint(-2, 2)
 
         networks[i].apply_neuron_constraints()
 

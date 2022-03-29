@@ -21,8 +21,16 @@ class NeuralNetwork:
         self.thetas = []
         self.thresholds = []
         self.loss = 0
+        self.performance_loss = 0
+        self.connection_loss = 0
+        self.performance_weight = 2
         self.best = "False"
         self.q = 0
+
+        self.both_count = 0
+        self.left_count = 0
+        self.right_count = 0
+        self.none_count = 0
 
         self.loss_func = self.original_loss
         # self.threshold_output = True
@@ -44,10 +52,10 @@ class NeuralNetwork:
         theta3 = np.random.randint(-2,2, (4,2))
         theta4 = np.random.randint(-2,2, (2,1))
         # theta4 = np.ones((2,1))
-        thrsh1 = np.random.randint(-2,2, (8,1))
-        thrsh2 = np.random.randint(-2,2, (4,1))
-        thrsh3 = np.random.randint(-2,2, (2,1))
-        thrsh4 = np.random.randint(-2,2, (1,1))
+        thrsh1 = np.random.randint(-4,3, (8,1))
+        thrsh2 = np.random.randint(-4,3, (4,1))
+        thrsh3 = np.random.randint(-4,3, (2,1))
+        thrsh4 = np.random.randint(-2,1, (1,1))
 
         self.thetas = [theta1, theta2, theta3, theta4]
         self.thresholds = [thrsh1, thrsh2, thrsh3, thrsh4]
@@ -57,10 +65,23 @@ class NeuralNetwork:
 
     def evaluate_network(self, sample, goal_is_and):
         x = sample["pixels"]
-        prediction = self.feed_forward_tanh(x)
-        # prediction = self.feed_forward(x)
+
+        # prediction = self.feed_forward_tanh(x)
+        prediction = self.feed_forward(x)
+
         loss = self.calculate_loss(prediction, sample, goal_is_and)
-        self.loss += loss
+        if loss != 0:
+            if sample["int_label"] == 3:
+                self.both_count += 1
+            if sample["int_label"] == 1:
+                self.left_count += 1
+            if sample["int_label"] == 2:
+                self.right_count += 1
+            if sample["int_label"] == 0:
+                self.none_count += 1
+
+        # self.loss += loss
+        self.performance_loss += loss
 
     def feed_forward(self, x):
         thetas = self.thetas
@@ -84,9 +105,9 @@ class NeuralNetwork:
             else:
                 z = np.dot(z, thetas[i])
 
-            # temp = ts[i]
             a = np.sum([z.reshape(len(z),1), ts[i]], axis=0)
             z = self.apply_tanh(a).reshape(len(a))
+
         if z >= 0: z = 1
         else: z = 0
         return z
@@ -119,6 +140,9 @@ class NeuralNetwork:
             else:
                 label = 0
 
+        if prediction - label != 0:
+            stop = 3
+
         return int((prediction - label) ** 2)
 
     @staticmethod
@@ -142,8 +166,19 @@ class NeuralNetwork:
                     elif theta[node_num][choice] < 0:
                         theta[node_num][choice] += 1
                     total = sum(abs(theta[node_num]))
-    
-    
+
+    def calculate_connection_loss(self):
+        self.connection_loss = sum([sum(1 for w in theta.flatten() if w != 0) for theta in self.thetas])
+
+    def normalize_losses(self, num_samples, max_connections):
+        self.performance_loss = round(self.performance_loss / num_samples, 3)
+        self.connection_loss = round(self.connection_loss / max_connections, 3)
+
+    def combine_losses(self):
+        # self.loss = round((self.performance_weight * self.performance_loss + self.connection_loss) \
+        #             / (self.performance_weight + 1), 3)
+        self.loss = self.performance_loss
+
 class LucNeuralNetwork(NeuralNetwork):
     
     def __init__(self):
@@ -204,20 +239,42 @@ def evaluate_q(population: list[NeuralNetwork], normalize, graph=NetworkGraph):
     return population_q
 
 
-
-
-
-
-
+# Non class functions
 def evaluate_population(population: list[NeuralNetwork], samples, goal_is_and):
     population_loss = []
+    pop_wrong = []
+    pop_wrong_both = []
+    pop_wrong_left = []
+    pop_wrong_right = []
+    pop_wrong_none = []
+    # best_connection_loss = 1
+    # best_performance_loss = 1
     for network in population:
-        network.loss = 0
+        network.performance_loss = 0
         network.best = "false"
+        network.both_count = 0
+        network.left_count = 0
+        network.right_count = 0
+        network.none_count = 0
+
         for sample in samples:
             network.evaluate_network(sample, goal_is_and)
+
+        # network.calculate_connection_loss()
+        # network.normalize_losses(num_samples=len(samples), max_connections=106)
+        network.combine_losses()
         population_loss.append(network.loss)
-    return population_loss
+        pop_wrong_both.append(network.both_count)
+        pop_wrong_left.append(network.left_count)
+        pop_wrong_right.append(network.right_count)
+        pop_wrong_none.append(network.none_count)
+
+        # if network.performance_loss < best_performance_loss:
+        #     best_performance_loss = network.performance_loss
+        # if network.connection_loss < best_connection_loss:
+        #     best_connection_loss = network.connection_loss
+    pop_wrong = [pop_wrong_both, pop_wrong_left, pop_wrong_right, pop_wrong_none]
+    return population_loss, pop_wrong#, best_performance_loss, best_connection_loss
 
 
 def generate_population(n):

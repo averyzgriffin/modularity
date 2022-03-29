@@ -11,6 +11,7 @@ from os.path import join
 
 import matplotlib
 from matplotlib import pyplot as plt
+import numpy as np
 import pickle
 from tqdm import tqdm
 
@@ -23,6 +24,19 @@ def record_loss(population_loss, all_losses, best_losses, average_losses):
     best_loss = round(min(population_loss), 3)
     best_losses.append(best_loss)
     average_losses.append(average_loss)
+
+
+def record_wrong(population_loss, pop_wrong):
+    average_wrong_both  = round(sum(pop_wrong[0]) / len(pop_wrong[0]), 3)
+    average_wrong_left  = round(sum(pop_wrong[1]) / len(pop_wrong[1]), 3)
+    average_wrong_right = round(sum(pop_wrong[2]) / len(pop_wrong[2]), 3)
+    average_wrong_none  = round(sum(pop_wrong[3]) / len(pop_wrong[3]), 3)
+    best_wrong_both  = pop_wrong[0][np.argmin(population_loss)]
+    best_wrong_left  = pop_wrong[1][np.argmin(population_loss)]
+    best_wrong_right = pop_wrong[2][np.argmin(population_loss)]
+    best_wrong_none  = pop_wrong[3][np.argmin(population_loss)]
+    return [average_wrong_both, average_wrong_left, average_wrong_right, average_wrong_none,
+            best_wrong_both, best_wrong_left, best_wrong_right, best_wrong_none]
 
 
 def record_q(population_q, all_q, best_q, average_q):
