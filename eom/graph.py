@@ -91,8 +91,15 @@ class NetworkGraph:
                 ax=ax1)
         ax1.set_title('Graph color coded by detected modules')
 
+        # plt.text(.90, .95, f"ID: {self.network['id']}", transform=ax1.transAxes)
         plt.text(.90, .90, f"Loss: {self.network['loss']}", transform=ax1.transAxes)
-
+        plt.text(.90, .80, f"Q Value: {self.network['q']}", transform=ax1.transAxes)
+        # try:
+        #     plt.text(.90, .85, f"Parent 1: {self.network['parent1']}", transform=ax1.transAxes)
+        #     plt.text(.90, .80, f"Parent 2: {self.network['parent2']}", transform=ax1.transAxes)
+        # except Exception as e:
+        #     plt.text(.90, .85, "Parent 1: n/a", transform=ax1.transAxes)
+        #     plt.text(.90, .80, "Parent 2: n/a", transform=ax1.transAxes)
         # if self.network.best == "True":
         #     plt.text(.90, .80, "*Best Network in Generation", transform=ax1.transAxes)
 
