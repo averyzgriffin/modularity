@@ -1,40 +1,67 @@
 import copy
 import itertools
+import json
 from math import ceil
 import os
+os.environ['NUMPY_EXPERIMENTAL_ARRAY_FUNCTION'] = '0'
 from os.path import join
+from os import makedirs
 import random
 import shutil
 
-import io
 import cProfile
 import pstats
 import matplotlib
 from matplotlib import pyplot as plt
 import numpy as np
+from numba import njit
+from tqdm import tqdm
+import yaml
 
 from graph import visualize_graph_data, NetworkGraph
+from modularity import compute_modularity, normalize_q
 
 
-def main(runname):
-    checkpoint = 10
-    elite = False
-    gen_size = 1000
-    generations = 15
-    mvg = False
-    goal_is_and = True
-    mvg_frequency = 20
-    parents_perc = .40
+def main(config):
+    runname = config["runname"]
+    checkpoint = config["checkpoint"]
+    elite = config["elite"]
+    gen_size = config["gen_size"]
+    generations = config["generations"]
+    mvg = config["mvg"]
+    goal_is_and = config["goal_is_and"]
+    qvalues = config["qvalues"]
+    qvalue_interval = config["qvalue_interval"]
+    mvg_frequency = config["mvg_frequency"]
+    parents_perc = config["parents_perc"]
+    load_initial_gen = config["load_initial_gen"]
+    initial_gen_path = config["initial_gen_path"]
     num_parents = int(gen_size * parents_perc)
 
-    population = [build_network() for i in range(gen_size)]
-    samples = generate_samples()
     all_losses = []
     best_losses = []
     average_losses = []
+    all_q = []
+    best_q = []
+    average_q = []
+    parents_q = []
+    counter = 0
+    save_mode = False
+    checking = True
+
+    if load_initial_gen:
+        population = load_weights(initial_gen_path)
+    else:
+        population = [build_network() for i in range(gen_size)]
+
+    samples = generate_samples()
+
+    clear_dirs(runname)
+    save_weights(population[:10], runname, 0)
+    visualize_graph_data(population[:10], runname, 0)
 
     for i in range(generations):
-        print(f"\n Starting Gen {i}")
+        print(f"\n ---- Run {runname}. Starting Gen {i}")
 
         # Varying the Loss Function
         if mvg and i % mvg_frequency == 0 and i != 0:
@@ -43,46 +70,94 @@ def main(runname):
         if goal_is_and: print(f"Goal is L AND R")
         else: print("Goal is L OR R")
 
+        if qvalues and i % qvalue_interval == 0:
+            population_q = evaluate_q(population, normalize=True)
+            record_q(population_q, all_q, best_q, average_q, parents_q, int(gen_size*parents_perc))
+            plot_q(best_q, average_q, parents_q, runname)
 
         if i > 0:
             # Main genetic algorithm code
             parents = select_best_loss(population, all_losses[i-1], num_parents)
             offspring = crossover(parents, gen_size, elite, parents_perc)
             population = mutate(offspring)
-            # if elite:
-            #     population = parents + population
+            if elite:
+                population = parents + population
 
             # Checkpoint
             if i % checkpoint == 0:
-                visualize_graph_data(parents[:10], runname, i)
+                # population_q = evaluate_q(population, normalize=True)
+                visualize_graph_data(parents, runname, i)
                 plot_loss(best_losses, average_losses, runname)
+                save_weights(population, runname, i)
 
-        population_loss = evaluate_population(population, samples, goal_is_and)
+        population_loss = evaluate_population(population, samples, goal_is_and, loss="loss", activation="tanh")
         record_loss(population_loss, all_losses, best_losses, average_losses)
         print("Loss: ", best_losses[i])
+
+        # if best_losses[i] == 0:
+        #     counter += 1
+        # else: counter = 0
+
+        # if checking and (counter > 30 or i > 2000):
+        #     save_mode = True
+        #     start, stop = i, i + 101
+        #     print("Save mode active until generation ", stop)
+        #     checking = False
+        #
+        # if save_mode:
+        #     if start <= i <= stop:
+        #         visualize_graph_data(population, runname, i)
+        #         save_weights(population, runname, i)
 
     # Final operations
     plot_loss(best_losses, average_losses, runname)
     visualize_graph_data(parents[:10], runname, i)
+    save_weights(population, runname, 0)
+
+
+def unit_test_feedforward():
+    gen_size = 1000
+    generations = 10
+    population = [build_network() for i in range(gen_size)]
+    samples = generate_samples()
+
+    for i in range(generations):
+        print(f"Gen {i}")
+        population_loss = evaluate_population(population, samples, goal_is_and=True, activation="tanh")
 
 
 # Generate 256 Samples
-def label_sample(sample):
+def and_label_sample(sample):
     left = False
     right = False
-    if sum(sample[0:4]) >= 1 or sum(sample[0:2]) >= 1: left = True
-    if sum(sample[4:8]) >= 1 or sum(sample[6:8]) >= 1: right = True
 
-    if left and right: return "both"
-    elif left: return "left"
-    elif right: return "right"
-    else: return "neither"
+    if (sum(sample[0:4]) >= 3) or (sum(sample[0:2]) >= 1 and sum(sample[2:4]) == 0): left = True
+    if (sum(sample[4:8]) >= 3) or (sum(sample[6:8]) >= 1 and sum(sample[4:6]) == 0): right = True
+
+    if left and right: return 1
+    elif left: return 0
+    elif right: return 0
+    else: return 0
+
+
+def or_label_sample(sample):
+    left = False
+    right = False
+
+    if (sum(sample[0:4]) >= 3) or (sum(sample[0:2]) >= 1 and sum(sample[2:4]) == 0): left = True
+    if (sum(sample[4:8]) >= 3) or (sum(sample[6:8]) >= 1 and sum(sample[4:6]) == 0): right = True
+
+    if left and right: return 1
+    elif left: return 1
+    elif right: return 1
+    else: return 0
 
 
 def generate_samples():
     """Much more eloquent way of doing things
     https://stackoverflow.com/questions/4928297/all-permutations-of-a-binary-sequence-x-bits-long"""
-    samples = [dict({"pixels": np.array(seq), "label": label_sample(seq)}) for seq in itertools.product([0,1], repeat=8)]
+    samples = [dict({"pixels": np.array(seq), "and_label": and_label_sample(seq), "or_label": or_label_sample(seq)}) for seq in itertools.product([0,1], repeat=8)]
+    # samples = [dict({"pixels": np.array(seq).reshape((1,len(seq))), "label": label_sample(seq)}) for seq in itertools.product([0,1], repeat=8)]
     return samples
 
 
@@ -97,41 +172,90 @@ def build_network():
         thetas.append(np.random.randint(-2, 2, (input_size[i], output_size[i])))
         biases.append(np.random.randint(-4, 3, (output_size[i], 1)))
     biases[-1] = np.random.randint(-2, 1, (1,1))
-    # apply_neuron_constraints()
-    return {"thetas": thetas, "biases": biases, "loss": 0}
+    network = {"thetas": thetas, "biases": biases, "loss": 0, "q": "n/a"}
+    # apply_neuron_constraints(network)
+    return network
 
+
+def apply_neuron_constraints(network):
+    # thetas = network["thetas"]
+    for theta in network["thetas"]:
+        theta = theta.transpose()
+        for node_num in range(len(theta)):
+            total = sum(abs(theta[node_num]))
+            while total > 3:
+                choice = random.randint(0, len(theta.transpose()) - 1)
+                if theta[node_num][choice] > 0:
+                    theta[node_num][choice] -= 1
+                elif theta[node_num][choice] < 0:
+                    theta[node_num][choice] += 1
+                total = sum(abs(theta[node_num]))
 
 # Evaluate Network
 """Maybe if we can represent the networks in some abstract way and 
    then just use a regular ML lib to do the eval"""
-def evaluate_population(population, samples, goal_is_and):
+def evaluate_population(population, samples, goal_is_and, loss, activation="vanilla"):
     population_loss = []
-    for network in population:
-        network["loss"] = 0
+    for i, network in enumerate(population):
+        network[loss] = 0
         for sample in samples:
-            evaluate_network(network, sample, goal_is_and)
-        population_loss.append(network["loss"])
+            evaluate_network(network, sample, loss, goal_is_and, activation)
+        population_loss.append(network[loss])
     return population_loss
 
 
-def evaluate_network(network, sample, goal_is_and):
+def evaluate_network(network, sample, loss, goal_is_and, activation="vanilla"):
     x = sample["pixels"]
-    prediction = feed_forward(network, x)
-    loss = calculate_loss(prediction, sample, goal_is_and)
-    network["loss"] += loss
+    prediction = feed_forward(network, x, activation)
+    if goal_is_and:
+        loss_ = calculate_loss_and(prediction, sample)
+    else:
+        loss_ = calculate_loss_or(prediction, sample)
+    network[loss] += loss_
 
 
-def feed_forward(network, x):
+def feed_forward(network, x, activation="vanilla"):
     for i in range(len(network["thetas"])):
         if i == 0:
+            # z = dot_py(x, network["thetas"][i])
             z = np.dot(x.transpose(), network["thetas"][i])
         else:
+            # z = dot_py(z, network["thetas"][i])
             z = np.dot(z, network["thetas"][i])
 
         # if i != len(network["thetas"]) - 1:
         # todo may want to do this differently. could be making a big deal
-        apply_threshold(z, network["biases"][i])
+        # if activation == "vanilla":
+        #     apply_threshold(z, network["biases"][i])
+        if activation == "tanh":
+            z = tanh_activation(z, network["biases"][i])
+            # z2 = tanh_activation(z2, network["biases"][i])
+
+    if z >= 0: z = 1
+    else: z = 0
+
     return z
+
+
+@njit(fastmath=True)
+def dot_py(A,B):
+    m, n = A.shape
+    p = B.shape[1]
+
+    C = np.zeros((m,p))
+
+    for i in range(0,m):
+        for j in range(0,p):
+            for k in range(0,n):
+                C[i,j] += A[i,k]*B[k,j]
+    return C
+
+
+@njit(fastmath=True)
+def tanh_activation(z, b):
+    # a = np.sum([z.reshape(len(z),1), b], axis=0)
+    a = z + b.reshape(len(b))
+    return np.tanh(20*a)
 
 
 def apply_threshold(z, t):
@@ -142,19 +266,23 @@ def apply_threshold(z, t):
             z[i] = 0
 
 
-def calculate_loss(prediction, sample, goal_is_and):
-    if goal_is_and:
-        if sample["label"] == "both":
-            label = 1
-        else:
-            label = 0
-    elif not goal_is_and:
-        if sample["label"] == "left" or sample["label"] == "right" or sample["label"] == "both":
-            label = 1
-        else:
-            label = 0
+def calculate_loss_and(prediction, sample):
+    # if goal_is_and:
+    #     if sample["label"] == "both":
+    #         label = 1
+    #     else:
+    #         label = 0
+    # elif not goal_is_and:
+    #     if sample["label"] == "left" or sample["label"] == "right" or sample["label"] == "both":
+    #         label = 1
+    #     else:
+    #         label = 0
 
-    return int((prediction - label) ** 2)
+    return int((prediction - sample["and_label"]) ** 2)
+
+
+def calculate_loss_or(prediction, sample):
+    return int((prediction - sample["or_label"]) ** 2)
 
 
 def record_loss(population_loss, all_losses, best_losses, average_losses):
@@ -189,6 +317,42 @@ def plot_loss(best_scores, average_scores, runname):
     plt.close(fig)
 
 
+def record_q(population_q, all_q, best_q, average_q, parents_q, num_parents):
+    all_q.append(population_q)
+    best_q.append(round(max(population_q), 3))
+    average_q.append(round(sum(population_q) / len(population_q), 3))
+    parents_q.append(round(sum(population_q[:num_parents]) / num_parents, 3))
+
+
+def plot_q(best_scores, average_scores, parent_scores, runname):
+    matplotlib.use("Agg")
+    fig = plt.figure(figsize=(24,8))
+    ax1 = fig.add_subplot(1, 3, 1)
+    ax2 = fig.add_subplot(1, 3, 2)
+    ax3 = fig.add_subplot(1, 3, 3)
+    ax1.plot(best_scores, label='best Q')
+    ax2.plot(average_scores, label='average Q')
+    ax3.plot(parent_scores, label='Parents Average Q')
+    ax1.set_xlabel('Generation (n)')
+    ax1.set_ylabel('Q')
+    ax1.set_title('Best Q Each Generation')
+    ax1.legend()
+    ax2.set_xlabel('Generation (n)')
+    ax2.set_ylabel('Q')
+    ax2.set_title('Average Q Each Generation')
+    ax2.legend()
+    ax3.set_xlabel('Generation (n)')
+    ax3.set_ylabel('Q')
+    ax3.set_title('Parents Average Q Each Generation')
+    ax3.legend()
+
+    file_path = join('Q_curves', f'Q_{runname}').replace("\\", "/")
+    plt.savefig(file_path+".png")
+
+    fig.clear()
+    plt.close(fig)
+
+
 # Crossover Networks
 def crossover(parents, gen_size, elite, parents_perc):
     new_gen = []
@@ -204,6 +368,8 @@ def crossover(parents, gen_size, elite, parents_perc):
 
         # Copy one parent. Will be basis for child (speeds up crossover)
         child = copy.deepcopy(parent_1)
+        # child["parent1"] = parent_1["id"]
+        # child["parent2"] = parent_2["id"]
 
         # Loop through each weight and activation of the child and randomly assign parent
         for l in range(len(child["thetas"])):
@@ -222,7 +388,6 @@ def crossover(parents, gen_size, elite, parents_perc):
 def mutate(population, num_nodes=15):
     """Instead of iterating through each weight, just do the random pull the appropriate number of times,
        choose a number randomly from the appropriate domain, and then alter that node/weight/bias"""
-    num_active_connections = 100
     for i in range(len(population)):
         # Add connection
         if random.uniform(0,1) <= 0.2:
@@ -238,12 +403,21 @@ def mutate(population, num_nodes=15):
                 mutate_threshold(population[i], t)
 
         # Mutate connection
+        num_active_connections = count_connections(population[i])
         for w in range(num_active_connections):
             if random.uniform(0, 1) <= (2/num_active_connections):
                 mutate_connection(population[i], w)
 
+        # apply_neuron_constraints(population[i])
+
     return population
 
+
+def count_connections(network):
+    count = 0
+    for layer in network["thetas"]:
+        count += np.count_nonzero(layer)
+    return count
 
 def add_connection(network):
     l1 = np.random.choice(3)
@@ -324,6 +498,21 @@ def select_best_loss(population, scores, num_parents):
     return selected
 
 
+def evaluate_q(population, normalize, graph=NetworkGraph):
+    population_q = []
+    for network in tqdm(population, desc="Computing modularity for networks in population"):
+        network["q"] = 0
+        ng = graph(network)
+        ng.convert2graph()
+        ng.get_data()
+        qvalue = compute_modularity(ng)
+        if normalize:
+            qvalue = normalize_q(qvalue)
+        network["q"] = round(qvalue, 3)
+        population_q.append(network["q"])
+    return population_q
+
+
 def clear_dirs(runname):
     folders = ['graphviz_plots', 'networkx_graphs', 'saved_weights']
     for folder in folders:
@@ -340,18 +529,72 @@ def clear_dirs(runname):
                     print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
+def save_weights(population, runname, gen):
+    makedirs(f"saved_weights/{runname}/gen_{gen}", exist_ok=True)
+    for i in range(len(population)):
+        w_file = open(f"saved_weights/{runname}/gen_{gen}/network_{i}.json", "w")
+        json.dump(population[i], w_file, default=default)
+        # json.dump(population[i]["thetas"], w_file, default=default)
+        # json.dump(population[i]["biases"], w_file, default=default)
+        w_file.close()
+
+
+def load_weights(weights_path):
+    population = []
+    for file in os.listdir(weights_path):
+        w_file = open(f"{weights_path}/{file}", "r")
+        network = json.load(w_file)
+        the_hard_way(network)
+        population.append(network)
+        w_file.close()
+    return population
+
+
+def default(obj):
+    if isinstance(obj, np.ndarray):
+        return obj.tolist()
+    raise TypeError('Not serializable')
+
+
+def the_hard_way(network):
+    keys = ["thetas", "biases"]
+    for key in keys:
+        for i in range(len(network[key])):
+            for j in range(len(network[key][i])):
+                if isinstance(network[key][i][j], list):
+                    network[key][i][j] = np.array(network[key][i][j])
+            if isinstance(network[key][i], list):
+                network[key][i] = np.array(network[key][i])
+
+
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    runname = "2013profiling" # "2013paper_000"
-    clear_dirs(runname)
 
-    for col in ["ncalls","tottime","cumtime"]:
-        profiler = cProfile.Profile()
-        profiler.enable()
-        main(runname)
-        profiler.disable()
-        with open(f'cprofile/{col}.txt', 'w') as f:
-            stats = pstats.Stats(profiler, stream=f)
-            stats.strip_dirs()
-            stats.sort_stats(col)
-            stats.print_stats()
+    # Load in the experiment configurations
+    yaml_filename = "active_experiment.yaml"
+    with open("config_files/"+yaml_filename, 'r') as file:
+        config = yaml.safe_load(file)
+
+    shutil.copy("config_files/"+yaml_filename, "config_files/"+config["runname"]+".yaml")
+    main(config)
+
+
+    # makedirs(join('cprofile', runname).replace("\\", "/"), exist_ok=True)
+    # samps = generate_samples()
+    # right = sum([1 for samp in samps if samp["label"]=="right"])
+    # left = sum([1 for samp in samps if samp["label"]=="left"])
+    # both = sum([1 for samp in samps if samp["label"]=="both"])
+    # none = sum([1 for samp in samps if samp["label"]=="none"])
+    # x = right + left + both + none
+
+    # for col in ["tottime"]:
+    #     profiler = cProfile.Profile()
+    #     profiler.enable()
+    #     main(runname)
+        # unit_test_feedforward()
+        # profiler.disable()
+        # with open(f'cprofile/{runname}/{col}.txt', 'w') as f:
+        #     stats = pstats.Stats(profiler, stream=f)
+        #     stats.strip_dirs()
+        #     stats.sort_stats(col)
+        #     stats.print_stats()
