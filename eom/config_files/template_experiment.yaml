@@ -1,0 +1,21 @@
+# Config settings for main experiment
+
+runname: mvg_fixedsamples_gen1000_tanh_varyingpm2
+num_samples: 256
+gen_sizes: [1000]
+mutation_rates: [.9]
+generations: 10000
+
+# TODO - change how often the goal changes
+
+goals: ["mvg"]
+mvg_frequency: [20]
+checkpoint: 100
+elite: [True]
+
+
+loss_func: "L vs R"
+threshold_output: False
+fixate_thresholds: False
+fixate_final_weights: False
+weights_domain: (0,1) # or original
