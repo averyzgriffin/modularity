@@ -84,12 +84,13 @@ def main(config):
             if elite:
                 population = parents + population
 
+            if i % 50:
+                plot_loss(best_losses, average_losses, runname)
+
             # Checkpoint
             if i % checkpoint == 0:
-                # population_q = evaluate_q(population, normalize=True)
-                visualize_graph_data(parents, runname, i)
-                plot_loss(best_losses, average_losses, runname)
-                save_weights(population, runname, i)
+                visualize_graph_data(parents[:10], runname, i)
+                save_weights(population[:10], runname, i)
 
         population_loss = evaluate_population(population, samples, goal_is_and, loss="loss", activation="tanh")
         record_loss(population_loss, all_losses, best_losses, average_losses)
