@@ -46,7 +46,7 @@ def compute_degrees(G: networkx.Graph, module):
 
 
 def normalize_q(Q):
-    randQ = .2011
+    randQ = .0104
     maxQ = .82
     return (Q - randQ) / (maxQ - randQ)
 
