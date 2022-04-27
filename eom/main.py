@@ -442,28 +442,28 @@ def count_connections(network):
 
 
 def add_connection(network):
-    l1 = np.random.choice(3)
+    l1 = np.random.choice(4)
     while not check_for_value(network, l1, remove=False):
-        l1 = np.random.choice(3)
-    n1 = np.random.choice(len(network["thetas"][l1]))
-    n2 = np.random.choice(len(network["thetas"][l1+1]))
+        l1 = np.random.choice(4)
+    n1 = np.random.choice(network["thetas"][l1].shape[0])
+    n2 = np.random.choice(network["thetas"][l1].shape[1])
     while network["thetas"][l1][n1][n2] != 0:
         # todo figure out way of avoiding long random loops. predefine what connections are 0
-        n1 = np.random.choice(len(network["thetas"][l1]))
-        n2 = np.random.choice(len(network["thetas"][l1+1]))
+        n1 = np.random.choice(network["thetas"][l1].shape[0])
+        n2 = np.random.choice(network["thetas"][l1].shape[1])
     network["thetas"][l1][n1][n2] = np.random.choice([-2, -1, 1, 2])
 
 
 def remove_connection(network):
-    l1 = np.random.choice(3)
+    l1 = np.random.choice(4)
     while not check_for_value(network, l1, remove=True):
-        l1 = np.random.choice(3)
-    n1 = np.random.choice(len(network["thetas"][l1]))
-    n2 = np.random.choice(len(network["thetas"][l1+1]))
+        l1 = np.random.choice(4)
+    n1 = np.random.choice(network["thetas"][l1].shape[0])
+    n2 = np.random.choice(network["thetas"][l1].shape[1])
     while network["thetas"][l1][n1][n2] == 0:
         # todo figure out way of avoiding long random loops. predefine what connections are not 0
-        n1 = np.random.choice(len(network["thetas"][l1]))
-        n2 = np.random.choice(len(network["thetas"][l1+1]))
+        n1 = np.random.choice(network["thetas"][l1].shape[0])
+        n2 = np.random.choice(network["thetas"][l1].shape[1])
     network["thetas"][l1][n1][n2] = 0
 
 
