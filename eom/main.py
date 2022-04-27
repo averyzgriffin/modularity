@@ -34,6 +34,7 @@ def main(config):
     qvalue_interval = config["qvalue_interval"]
     mvg_frequency = config["mvg_frequency"]
     parents_perc = config["parents_perc"]
+    early_stopping = config["early_stopping"]
     load_initial_gen = config["load_initial_gen"]
     initial_gen_path = config["initial_gen_path"]
     num_parents = int(gen_size * parents_perc)
@@ -94,9 +95,13 @@ def main(config):
         record_loss(population_loss, all_losses, best_losses, average_losses)
         print("Loss: ", best_losses[i])
 
-        # if best_losses[i] == 0:
-        #     counter += 1
-        # else: counter = 0
+        if early_stopping:
+            if best_losses[i] == 0:
+                counter += 1
+            else: counter = 0
+
+        if counter > 30:
+            break
 
         # if checking and (counter > 30 or i > 2000):
         #     save_mode = True
