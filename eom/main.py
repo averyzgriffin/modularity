@@ -392,16 +392,20 @@ def crossover(parents, gen_size, elite, parents_perc):
 
 
 # Mutate Network
-def mutate(population, num_nodes=15):
+def mutate(population, old_way, num_nodes=15):
     """Instead of iterating through each weight, just do the random pull the appropriate number of times,
        choose a number randomly from the appropriate domain, and then alter that node/weight/bias"""
     for i in range(len(population)):
+
+        # if not old_way:
+        #     num_active_connections = count_connections(population[i])
+
         # Add connection
-        if random.uniform(0,1) <= 0.2:
+        if random.uniform(0,1) <= 0.2:# and num_active_connections < 106:
             add_connection(population[i])
 
         # Remove connection
-        if random.uniform(0, 1) <= 0.2:
+        if random.uniform(0, 1) <= 0.2:# and num_active_connections > 0:
             remove_connection(population[i])
 
         # Mutate Threshold
@@ -409,11 +413,21 @@ def mutate(population, num_nodes=15):
             if random.uniform(0,1) <= (1/24):
                 mutate_threshold(population[i], t)
 
-        # Mutate connection
         num_active_connections = count_connections(population[i])
-        for w in range(num_active_connections):
-            if random.uniform(0, 1) <= (2/num_active_connections):
-                mutate_connection(population[i], w)
+
+        # Mutate connection
+        if old_way:
+            for w in range(num_active_connections):
+                if random.uniform(0, 1) <= (2 / num_active_connections):
+                    mutate_connection_oldway(population[i], w)
+        else:
+            if num_active_connections > 0:
+                for theta in range(len(population[i]["thetas"])):
+                    for neuron in range(len(population[i]["thetas"][theta])):
+                        for connection in range(len(population[i]["thetas"][theta][neuron])):
+                            if population[i]["thetas"][theta][neuron][connection] != 0:
+                                if random.uniform(0, 1) <= (2 / num_active_connections):
+                                    mutate_connection(population[i], theta, neuron, connection)
 
         # apply_neuron_constraints(population[i])
 
@@ -425,6 +439,7 @@ def count_connections(network):
     for layer in network["thetas"]:
         count += np.count_nonzero(layer)
     return count
+
 
 def add_connection(network):
     l1 = np.random.choice(3)
@@ -466,13 +481,25 @@ def mutate_threshold(network, node_num):
         network["biases"][index[0]][index[1]] += change
 
 
-def mutate_connection(network, weight_num):
+def mutate_connection_oldway(network, weight_num):
     index = map_weight_network(weight_num)
     weight_value = network["thetas"][index[0]][index[1]][index[2]]
     if weight_value != 0:
         change = np.random.choice([-1, 1])
-        if -2 <= weight_value + change <= 2:
-            network["thetas"][index[0]][index[1]][index[2]] += change
+        new_value = weight_value + change
+        if -2 <= new_value <= 2:
+            network["thetas"][index[0]][index[1]][index[2]] = new_value
+
+
+def mutate_connection(network, theta, neuron, connection):
+    weight_value = network["thetas"][theta][neuron][connection]
+    if weight_value != 0:
+        change = np.random.choice([-1, 1])
+        new_value = weight_value + change
+        if -2 <= new_value <= 2:
+            if new_value == 0:
+                new_value = weight_value + (2 * change)
+            network["thetas"][theta][neuron][connection] = new_value
 
 
 def map_node_network(node_num):
