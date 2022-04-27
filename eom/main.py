@@ -77,7 +77,7 @@ def main(config):
 
         if i > 0:
             # Main genetic algorithm code
-            parents = select_best_loss(population, all_losses[i-1], num_parents)
+            parents = select_best_score(population, all_losses[i - 1], num_parents)
             offspring = crossover(parents, gen_size, elite, parents_perc)
             population = mutate(offspring)
             if elite:
@@ -491,9 +491,9 @@ def map_weight_network(weight_num):
 
 
 # Multiobjective Selection
-def select_best_loss(population, scores, num_parents):
+def select_best_score(population, scores, num_parents, reverse=False):
     # Sorts the population by loss scores from lowest to highest and returns the best
-    sort = sorted(range(len(scores)), key=lambda k: scores[k])
+    sort = sorted(range(len(scores)), key=lambda k: scores[k], reverse=reverse)
     selected = [population[i] for i in sort[0:num_parents]]
     return selected
 

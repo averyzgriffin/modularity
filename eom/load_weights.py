@@ -4,7 +4,7 @@ import os
 import itertools
 
 from graph import visualize_graph_data
-from main import evaluate_population, select_best_loss, record_loss, crossover, mutate
+from main import evaluate_population, select_best_score, record_loss, crossover, mutate
 
 
 # Generate 256 Samples
