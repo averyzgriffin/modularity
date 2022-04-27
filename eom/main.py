@@ -80,7 +80,7 @@ def main(config):
             # Main genetic algorithm code
             parents = select_best_score(population, all_losses[i - 1], num_parents)
             offspring = crossover(parents, gen_size, elite, parents_perc)
-            population = mutate(offspring)
+            population = mutate(offspring, old_way=True)
             if elite:
                 population = parents + population
 
@@ -100,8 +100,9 @@ def main(config):
                 counter += 1
             else: counter = 0
 
-        if counter > 30:
-            break
+            if counter > 30:
+                print("Early Stop!")
+                break
 
         # if checking and (counter > 30 or i > 2000):
         #     save_mode = True
