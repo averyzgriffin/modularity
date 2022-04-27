@@ -1,0 +1,15 @@
+# Config settings for main experiment
+runname: mvg_calibQ_newMutate_000
+
+checkpoint: 100
+elite: True
+gen_size: 1000
+generations: 1000
+mvg: True
+mvg_frequency: 20
+goal_is_and: True
+qvalues: True
+qvalue_interval: 30
+parents_perc: .40
+load_initial_gen: False
+initial_gen_path: "saved_weights/fixed_gen1000_004/gen_200"
