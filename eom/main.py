@@ -200,7 +200,7 @@ def apply_neuron_constraints(network):
 # Evaluate Network
 """Maybe if we can represent the networks in some abstract way and 
    then just use a regular ML lib to do the eval"""
-def evaluate_population(population, samples, goal_is_and, loss, activation="vanilla"):
+def evaluate_population(population, samples, goal_is_and, loss, activation="tanh"):
     population_loss = []
     for i, network in enumerate(population):
         network[loss] = 0
@@ -210,7 +210,7 @@ def evaluate_population(population, samples, goal_is_and, loss, activation="vani
     return population_loss
 
 
-def evaluate_network(network, sample, loss, goal_is_and, activation="vanilla"):
+def evaluate_network(network, sample, loss, goal_is_and, activation="tanh"):
     x = sample["pixels"]
     prediction = feed_forward(network, x, activation)
     if goal_is_and:
