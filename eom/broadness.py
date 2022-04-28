@@ -2,7 +2,8 @@
 Measures broadness
 """
 
-from main import build_network, generate_samples, mutate, load_weights, evaluate_population, count_connections
+from main import build_network, generate_samples, mutate, load_weights, evaluate_population
+from perfect_modularity import build_perfect_network
 import pandas as pd
 
 
@@ -18,12 +19,11 @@ def main():
     losses_in_simulation = []
 
     for s in range(simulations):
-        print(f"\n Simulation {s}")
-        population = [load_weights(initial_gen_path)[0]]
-        # population = [build_network() for i in range(gen_size)]
+        # population = [load_weights(initial_gen_path)[0]]
+        population = [build_perfect_network()]
 
         for i in range(mutation_steps):
-            print(f"\n ---- Run {runname}. Mutation Step {i}")
+            print(f"\n ---- Run {runname}. Simulation # {s}. Mutation Step {i}")
             if goal_is_and: print(f"Goal is L AND R")
             else: print("Goal is L OR R")
 
@@ -31,8 +31,7 @@ def main():
             losses_in_simulation.append(loss)
             print("Loss: ", loss)
 
-            population = mutate(population)
-            print("Connection: ", count_connections(population[0]))
+            population = mutate(population, old_way=True)
 
         # all_losses.append(losses_in_simulation)
 
