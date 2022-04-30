@@ -230,15 +230,14 @@ def feed_forward(network, x, activation="vanilla"):
             # z = dot_py(z, network["thetas"][i])
             z = np.dot(z, network["thetas"][i])
 
-        # if i != len(network["thetas"]) - 1:
-        # todo may want to do this differently. could be making a big deal
-        # if activation == "vanilla":
-        #     apply_threshold(z, network["biases"][i])
+        if activation == "vanilla":
+            apply_threshold(z, network["biases"][i])
         if activation == "tanh":
             z = tanh_activation(z, network["biases"][i])
             # z2 = tanh_activation(z2, network["biases"][i])
 
-    if z >= 0: z = 1
+    if (activation == "vanilla" and z > 0) or (activation == "tanh" and z >= 0):
+        z = 1
     else: z = 0
 
     return z
