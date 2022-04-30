@@ -158,8 +158,8 @@ perfect_network = build_perfect_network()
 # print(q)
 
 samples = generate_samples()
-and_loss = evaluate_population([perfect_network], samples, "loss", True, "tanh")
-or_loss = evaluate_population([perfect_network], samples, "loss", False, "tanh")
+and_loss = evaluate_population([perfect_network], samples, "loss", True, "vanilla")
+or_loss = evaluate_population([perfect_network], samples, "loss", False, "vanilla")
 
 print("and ", and_loss)
 print("or ", or_loss)
