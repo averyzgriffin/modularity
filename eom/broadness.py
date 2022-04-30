@@ -14,11 +14,11 @@ def get_average(i, n):
         return 0
 
 def main():
-    runname = "mvg_broadness_005"
-    initial_gen_path = "saved_weights/mvg_gen1000_005/gen_5000"
-    goal_is_and = False
-    mutation_steps = 100
-    simulations = 100
+    runname = "perfect_network_B"
+    initial_gen_path = "saved_weights/042722_fixed_000/gen_9999"
+    goal_is_and = True
+    mutation_steps = 10
+    simulations = 1000
 
     all_losses = []
     samples = generate_samples()
@@ -35,11 +35,11 @@ def main():
             if goal_is_and: print(f"Goal is L AND R")
             else: print("Goal is L OR R")
 
-            loss = evaluate_population(population, samples, goal_is_and, loss="loss", activation="tanh")[0]
+            loss = evaluate_population(population, samples, goal_is_and, loss="loss", activation="vanilla")[0]
             losses_in_simulation.append(loss)
             print("Loss: ", loss)
 
-            population = mutate(population, old_way=True)
+            population = mutate(population, old_way=False)
 
         # all_losses.append(losses_in_simulation)
 
@@ -54,7 +54,7 @@ def main():
 
     dict = {"Simulation Num": sim_num, "Steps": steps, "Loss": losses_in_simulation, "Delta Loss this step": delta_l, "Average Delta Loss per n Steps": ave_delta_per_step}
     df = pd.DataFrame(dict)
-    df.to_csv(f"broadness/{runname}.csv")
+    df.to_csv(f"measuring_broadness/{runname}.csv")
 
 
 # Press the green button in the gutter to run the script.
