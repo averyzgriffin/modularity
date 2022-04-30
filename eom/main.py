@@ -80,7 +80,7 @@ def main(config):
             # Main genetic algorithm code
             parents = select_best_score(population, all_losses[i - 1], num_parents)
             offspring = crossover(parents, gen_size, elite, parents_perc)
-            population = mutate(offspring, old_way=True)
+            population = mutate(offspring, old_way=False)
             if elite:
                 population = parents + population
 
@@ -101,7 +101,7 @@ def main(config):
                 counter += 1
             else: counter = 0
 
-            if counter > 30:
+            if counter > 50:
                 print("Early Stop!")
                 break
 
@@ -118,8 +118,8 @@ def main(config):
 
     # Final operations
     plot_loss(best_losses, average_losses, runname)
-    visualize_graph_data(parents[:10], runname, i)
-    save_weights(population, runname, 0)
+    visualize_graph_data(population, runname, i)
+    save_weights(parents[:10], runname, i)
 
 
 def unit_test_feedforward():
