@@ -24,9 +24,11 @@ def main():
     samples = generate_samples()
     losses_in_simulation = []
 
+    network = build_perfect_network()
+    # network = load_weights(initial_gen_path)[0]
+
     for s in range(simulations):
-        # population = [load_weights(initial_gen_path)[0]]
-        population = [build_perfect_network()]
+        population = [copy.deepcopy(network)]
 
         for i in range(mutation_steps):
             print(f"\n ---- Run {runname}. Simulation # {s}. Mutation Step {i}")
