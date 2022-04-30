@@ -39,7 +39,7 @@ def main():
             losses_in_simulation.append(loss)
             print("Loss: ", loss)
 
-            population = mutate(population, old_way=False)
+            population = mutate(population)
 
         # all_losses.append(losses_in_simulation)
 
