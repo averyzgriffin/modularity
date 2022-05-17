@@ -9,7 +9,6 @@ from os.path import join
 from os import makedirs
 import random
 import shutil
-
 import cProfile
 import pstats
 import matplotlib
@@ -274,17 +273,6 @@ def apply_threshold(z, t):
 
 
 def calculate_loss_and(prediction, sample):
-    # if goal_is_and:
-    #     if sample["label"] == "both":
-    #         label = 1
-    #     else:
-    #         label = 0
-    # elif not goal_is_and:
-    #     if sample["label"] == "left" or sample["label"] == "right" or sample["label"] == "both":
-    #         label = 1
-    #     else:
-    #         label = 0
-
     return int((prediction - sample["and_label"]) ** 2)
 
 
