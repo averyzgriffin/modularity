@@ -34,10 +34,14 @@ def save_samples(samples, name):
 def label_sample(sample):
     left = False
     right = False
-    if sum(sample["pixels"][0:4]) >= 1 or sum(sample["pixels"][0:2]) >= 1:
-        left = True
-    if sum(sample["pixels"][4:8]) >= 1 or sum(sample["pixels"][6:8]) >= 1:
-        right = True
+
+    if (sum(sample["pixels"][0:4]) >= 3) or (sum(sample["pixels"][0:2]) >= 1 and sum(sample["pixels"][2:4]) == 0): left = True
+    if (sum(sample["pixels"][4:8]) >= 3) or (sum(sample["pixels"][6:8]) >= 1 and sum(sample["pixels"][4:6]) == 0): right = True
+
+    # if sum(sample["pixels"][0:4]) >= 1 or sum(sample["pixels"][0:2]) >= 1:
+    #     left = True
+    # if sum(sample["pixels"][4:8]) >= 1 or sum(sample["pixels"][6:8]) >= 1:
+    #     right = True
 
     if left and right:
         sample["str_label"] = "both"
