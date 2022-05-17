@@ -1,5 +1,6 @@
 import argparse
 import copy
+from csv import writer
 import itertools
 import json
 from math import ceil
@@ -18,7 +19,7 @@ from numba import njit
 from tqdm import tqdm
 import yaml
 
-from graph import visualize_graph_data, NetworkGraph
+from graph import visualize_graph_data, visualize_graph_data_together, NetworkGraph
 from modularity import compute_modularity, normalize_q
 
 
