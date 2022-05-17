@@ -65,9 +65,16 @@ def main(config, exp_id: str, trial_num: int):
 
     samples = generate_samples()
 
-    clear_dirs(runname)
-    save_weights(population[:10], runname, 0)
-    visualize_graph_data(population[:10], runname, 0)
+    save_weights(population, exp_id, runname, 0)
+    visualize_graph_data(population, exp_id, runname, 0, goal_is_and)
+
+    population_loss = evaluate_population(population, samples, goal_is_and, loss="loss", activation="tanh")
+    parents = select_best_score(population, population_loss, num_parents)
+    population_q = evaluate_q(population, normalize=True)
+    record_q(population_q, all_q, best_q_values, average_q, q_gens, 0)
+    highestQ_networks = select_best_score(population, population_q, 10, reverse=True)
+    visulized_nets = parents[:10] + highestQ_networks[:10]
+    visualize_graph_data_together(visulized_nets, exp_id, trial_num, 0, goal_is_and)
 
     for i in range(generations):
 
