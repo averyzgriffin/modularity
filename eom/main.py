@@ -611,8 +611,7 @@ if __name__ == '__main__':
     with open("config_files/"+yaml_filename, 'r') as file:
         config = yaml.safe_load(file)
 
-    shutil.copy("config_files/"+yaml_filename, "config_files/"+config["runname"]+".yaml")
-    main(config)
+    main(config, exp_id, trial_num)
 
 
     # makedirs(join('cprofile', runname).replace("\\", "/"), exist_ok=True)
