@@ -421,11 +421,11 @@ def plot_loss(best_scores, average_scores, exp_id, trial_num):
     plt.close(fig)
 
 
-def record_q(population_q, all_q, best_q, average_q, parents_q, num_parents):
+def record_q(population_q, all_q, best_q, average_q, q_gens, gen):
     all_q.append(population_q)
     best_q.append(round(max(population_q), 3))
     average_q.append(round(sum(population_q) / len(population_q), 3))
-    parents_q.append(round(sum(population_q[:num_parents]) / num_parents, 3))
+    q_gens.append(gen)
 
 
 def plot_q(best_scores, average_scores, x, exp_id, trial_num):
