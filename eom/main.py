@@ -82,10 +82,10 @@ def main(config, exp_id: str, trial_num: int):
         if mvg and i % mvg_frequency == 0 and i != 0:
             goal_is_and = not goal_is_and
 
-        if qvalues and i % qvalue_interval == 0:
-            population_q = evaluate_q(population, normalize=True)
-            record_q(population_q, all_q, best_q, average_q, parents_q, int(gen_size*parents_perc))
-            plot_q(best_q, average_q, parents_q, runname)
+        # if (qvalues and i % qvalue_interval == 0) or (qvalues and i == generations-1):
+        #     population_q = evaluate_q(population, normalize=True)
+        #     record_q(population_q, all_q, best_q_values, average_q)
+        #     plot_q(best_q_values, average_q, exp_id, trial_num)
 
         if i > 0:
             # Main genetic algorithm code
@@ -98,9 +98,19 @@ def main(config, exp_id: str, trial_num: int):
                 plot_loss(best_losses, average_losses, exp_id, trial_num)
 
             # Checkpoint
-            if i % checkpoint == 0:
-                visualize_graph_data(parents[:10], runname, i)
-                save_weights(population[:10], runname, i)
+            if i % qvalue_interval == 0:
+                population_q = evaluate_q(population, normalize=True)
+                record_q(population_q, all_q, best_q_values, average_q, q_gens, i)
+                plot_q(best_q_values, average_q, q_gens, exp_id, trial_num)
+                highestQ_networks = select_best_score(population, all_q[int((i/qvalue_interval)) ], 10, reverse=True)
+                visulized_nets = parents[:10] + highestQ_networks[:10]
+                visualize_graph_data(visulized_nets, exp_id, runname, i, goal_is_and)
+
+            if i % 5000 == 0:
+                save_weights(population, exp_id, runname, i)
+
+            if i % 100 == 0:
+                parallel_checkpoint(best_losses, best_q_values, average_q, exp_id, trial_num, qvalue_interval, goal, i)
 
         population_loss = evaluate_population(population, samples, goal_is_and, loss="loss", activation="tanh")
         record_loss(population_loss, all_losses, best_losses, average_losses)
