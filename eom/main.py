@@ -1,3 +1,4 @@
+import argparse
 import copy
 import itertools
 import json
@@ -596,6 +597,14 @@ def the_hard_way(network):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
+
+    # Arguments
+    parser = argparse.ArgumentParser(description='Evolutionary Algorithm for Networks.')
+    parser.add_argument('--exp_id', type=str, help='Name of the experiment.')
+    parser.add_argument('--trial_number', type=int, help='Specific iteration within the experiment.')
+    args = parser.parse_args()
+    exp_id = args.exp_id
+    trial_num = args.trial_number
 
     # Load in the experiment configurations
     yaml_filename = "active_experiment.yaml"
