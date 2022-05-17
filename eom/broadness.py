@@ -54,7 +54,7 @@ def main():
 
     dict = {"Simulation Num": sim_num, "Steps": steps, "Loss": losses_in_simulation, "Delta Loss this step": delta_l, "Average Delta Loss per n Steps": ave_delta_per_step}
     df = pd.DataFrame(dict)
-    df.to_csv(f"measuring_broadness/{runname}.csv")
+    df.to_csv(f"measuring_broadness/{runname}.csv", index=False)
 
 
 # Press the green button in the gutter to run the script.
