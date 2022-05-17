@@ -71,8 +71,8 @@ class NeuralNetwork:
             else:
                 z = np.dot(z, thetas[i])
     
-            if i != len(thetas)-1: # TODO this is a luc thing
-                self.apply_threshold(z, ts[i])
+            self.apply_threshold(z, ts[i])
+
         return z
 
     def feed_forward_tanh(self, x):
@@ -84,16 +84,23 @@ class NeuralNetwork:
             else:
                 z = np.dot(z, thetas[i])
 
-            # temp = ts[i]
-            a = np.sum([z.reshape(len(z),1), ts[i]], axis=0)
-            z = self.apply_tanh(a).reshape(len(a))
+            z = self.tanh_activation(z, ts[i])
+            # a = np.sum([z.reshape(len(z),1), ts[i]], axis=0)
+            # z = self.apply_tanh(a).reshape(len(a))
+
         if z >= 0: z = 1
         else: z = 0
         return z
 
-    def apply_tanh(self, z):
-        a = np.tanh(20*z)
-        return a
+    # def apply_tanh(self, z):
+    #     a = np.tanh(20*z)
+    #     return a
+
+    # @njit(fastmath=True)
+    def tanh_activation(self, z, b):
+        # a = np.sum([z.reshape(len(z),1), b], axis=0)
+        a = z + b.reshape(len(b))
+        return np.tanh(20 * a)
 
     @staticmethod
     def apply_threshold(z, t):
