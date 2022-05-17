@@ -32,6 +32,9 @@ def main(config, exp_id: str, trial_num: int):
     generations = config["generations"]
     mvg = config["mvg"]
     goal_is_and = config["goal_is_and"]
+    if goal_is_and and not mvg: goal = "AND"
+    elif not goal_is_and and not mvg: goal = "OR"
+    else: goal = "MVG"
     qvalues = config["qvalues"]
     qvalue_interval = config["qvalue_interval"]
     mvg_frequency = config["mvg_frequency"]
@@ -45,10 +48,13 @@ def main(config, exp_id: str, trial_num: int):
     best_losses = []
     average_losses = []
     all_q = []
-    best_q = []
+    best_q_values = []
     average_q = []
     parents_q = []
+    q_gens = []
     counter = 0
+    best_loss = 256
+    flag1 = True
     save_mode = False
     checking = True
 
