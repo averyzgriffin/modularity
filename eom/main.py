@@ -373,15 +373,13 @@ def record_q(population_q, all_q, best_q, average_q, parents_q, num_parents):
     parents_q.append(round(sum(population_q[:num_parents]) / num_parents, 3))
 
 
-def plot_q(best_scores, average_scores, parent_scores, runname):
+def plot_q(best_scores, average_scores, x, exp_id, trial_num):
     matplotlib.use("Agg")
     fig = plt.figure(figsize=(24,8))
-    ax1 = fig.add_subplot(1, 3, 1)
-    ax2 = fig.add_subplot(1, 3, 2)
-    ax3 = fig.add_subplot(1, 3, 3)
-    ax1.plot(best_scores, label='best Q')
-    ax2.plot(average_scores, label='average Q')
-    ax3.plot(parent_scores, label='Parents Average Q')
+    ax1 = fig.add_subplot(1, 2, 1)
+    ax2 = fig.add_subplot(1, 2, 2)
+    ax1.plot(x, best_scores, label='best Q')
+    ax2.plot(x, average_scores, label='average Q')
     ax1.set_xlabel('Generation (n)')
     ax1.set_ylabel('Q')
     ax1.set_title('Best Q Each Generation')
@@ -390,10 +388,6 @@ def plot_q(best_scores, average_scores, parent_scores, runname):
     ax2.set_ylabel('Q')
     ax2.set_title('Average Q Each Generation')
     ax2.legend()
-    ax3.set_xlabel('Generation (n)')
-    ax3.set_ylabel('Q')
-    ax3.set_title('Parents Average Q Each Generation')
-    ax3.legend()
 
     dir_path = join('Q_curves', exp_id).replace("\\", "/")
     makedirs(dir_path, exist_ok=True)
