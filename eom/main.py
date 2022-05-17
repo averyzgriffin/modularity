@@ -70,14 +70,10 @@ def main(config, exp_id: str, trial_num: int):
     visualize_graph_data(population[:10], runname, 0)
 
     for i in range(generations):
-        print(f"\n ---- Run {runname}. Starting Gen {i}")
 
         # Varying the Loss Function
         if mvg and i % mvg_frequency == 0 and i != 0:
             goal_is_and = not goal_is_and
-            print(f"Goal changed to goal_is_and={goal_is_and}")
-        if goal_is_and: print(f"Goal is L AND R")
-        else: print("Goal is L OR R")
 
         if qvalues and i % qvalue_interval == 0:
             population_q = evaluate_q(population, normalize=True)
@@ -89,11 +85,10 @@ def main(config, exp_id: str, trial_num: int):
             parents = select_best_score(population, all_losses[i - 1], num_parents)
             offspring = crossover(parents, gen_size, elite, parents_perc)
             population = mutate(offspring)
-            if elite:
-                population = parents + population
+            if elite: population = parents + population
 
             if i % 50:
-                plot_loss(best_losses, average_losses, runname)
+                plot_loss(best_losses, average_losses, exp_id, trial_num)
 
             # Checkpoint
             if i % checkpoint == 0:
@@ -109,7 +104,7 @@ def main(config, exp_id: str, trial_num: int):
                 counter += 1
             else: counter = 0
 
-            if counter > 50:
+            if counter > 100:
                 print("Early Stop!")
                 break
 
