@@ -22,8 +22,9 @@ from graph import visualize_graph_data, NetworkGraph
 from modularity import compute_modularity, normalize_q
 
 
-def main(config):
-    runname = config["runname"]
+# Main Function
+def main(config, exp_id: str, trial_num: int):
+    runname = f"trial_{str(trial_num).zfill(3)}"
     checkpoint = config["checkpoint"]
     elite = config["elite"]
     gen_size = config["gen_size"]
@@ -340,7 +341,7 @@ def record_loss(population_loss, all_losses, best_losses, average_losses):
     average_losses.append(average_loss)
 
 
-def plot_loss(best_scores, average_scores, runname):
+def plot_loss(best_scores, average_scores, exp_id, trial_num):
     matplotlib.use("Agg")
     fig = plt.figure(figsize=(24,8))
     ax1 = fig.add_subplot(1, 2, 1)
@@ -357,8 +358,9 @@ def plot_loss(best_scores, average_scores, runname):
     ax2.legend()
 
     # plt.show()
-    file_path = join('loss_curves', f'loss_{runname}').replace("\\", "/")
-    plt.savefig(file_path+".png")
+    dir_path = join('loss_curves', exp_id).replace("\\", "/")
+    makedirs(dir_path, exist_ok=True)
+    plt.savefig(dir_path+f'/loss_{str(trial_num).zfill(3)}.png')
 
     fig.clear()
     plt.close(fig)
@@ -393,8 +395,9 @@ def plot_q(best_scores, average_scores, parent_scores, runname):
     ax3.set_title('Parents Average Q Each Generation')
     ax3.legend()
 
-    file_path = join('Q_curves', f'Q_{runname}').replace("\\", "/")
-    plt.savefig(file_path+".png")
+    dir_path = join('Q_curves', exp_id).replace("\\", "/")
+    makedirs(dir_path, exist_ok=True)
+    plt.savefig(dir_path+f'/Q_{str(trial_num).zfill(3)}.png')
 
     fig.clear()
     plt.close(fig)
@@ -581,10 +584,10 @@ def evaluate_q(population, normalize, graph=NetworkGraph):
     return population_q
 
 
-def clear_dirs(runname):
-    folders = ['graphviz_plots', 'networkx_graphs', 'saved_weights']
+def clear_dirs(id):
+    folders = ['graphviz_plots', 'networkx_graphs', 'saved_weights', 'csvs']
     for folder in folders:
-        dir_path = join(folder, runname).replace("\\", "/")
+        dir_path = join(folder, id).replace("\\", "/")
         if os.path.exists(dir_path):
             for filename in os.listdir(dir_path):
                 file_path = os.path.join(dir_path, filename).replace("\\", "/")
@@ -597,10 +600,10 @@ def clear_dirs(runname):
                     print('Failed to delete %s. Reason: %s' % (file_path, e))
 
 
-def save_weights(population, runname, gen):
-    makedirs(f"saved_weights/{runname}/gen_{gen}", exist_ok=True)
+def save_weights(population, exp_id, runname, gen):
+    makedirs(f"saved_weights/{exp_id}/{runname}/gen_{gen}", exist_ok=True)
     for i in range(len(population)):
-        w_file = open(f"saved_weights/{runname}/gen_{gen}/network_{i}.json", "w")
+        w_file = open(f"saved_weights/{exp_id}/{runname}/gen_{gen}/network_{i}.json", "w")
         json.dump(population[i], w_file, default=default)
         # json.dump(population[i]["thetas"], w_file, default=default)
         # json.dump(population[i]["biases"], w_file, default=default)
