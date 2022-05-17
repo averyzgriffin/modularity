@@ -80,7 +80,7 @@ def main(config):
             # Main genetic algorithm code
             parents = select_best_score(population, all_losses[i - 1], num_parents)
             offspring = crossover(parents, gen_size, elite, parents_perc)
-            population = mutate(offspring, old_way=True)
+            population = mutate(offspring)
             if elite:
                 population = parents + population
 
@@ -101,7 +101,7 @@ def main(config):
                 counter += 1
             else: counter = 0
 
-            if counter > 30:
+            if counter > 50:
                 print("Early Stop!")
                 break
 
@@ -118,8 +118,8 @@ def main(config):
 
     # Final operations
     plot_loss(best_losses, average_losses, runname)
-    visualize_graph_data(parents[:10], runname, i)
-    save_weights(population, runname, 0)
+    visualize_graph_data(population, runname, i)
+    save_weights(parents[:10], runname, i)
 
 
 def unit_test_feedforward():
@@ -230,15 +230,14 @@ def feed_forward(network, x, activation="vanilla"):
             # z = dot_py(z, network["thetas"][i])
             z = np.dot(z, network["thetas"][i])
 
-        # if i != len(network["thetas"]) - 1:
-        # todo may want to do this differently. could be making a big deal
-        # if activation == "vanilla":
-        #     apply_threshold(z, network["biases"][i])
+        if activation == "vanilla":
+            apply_threshold(z, network["biases"][i])
         if activation == "tanh":
             z = tanh_activation(z, network["biases"][i])
             # z2 = tanh_activation(z2, network["biases"][i])
 
-    if z >= 0: z = 1
+    if (activation == "vanilla" and z > 0) or (activation == "tanh" and z >= 0):
+        z = 1
     else: z = 0
 
     return z
@@ -392,20 +391,19 @@ def crossover(parents, gen_size, elite, parents_perc):
 
 
 # Mutate Network
-def mutate(population, old_way, num_nodes=15):
+def mutate(population, num_nodes=15):
     """Instead of iterating through each weight, just do the random pull the appropriate number of times,
        choose a number randomly from the appropriate domain, and then alter that node/weight/bias"""
     for i in range(len(population)):
 
-        # if not old_way:
-        #     num_active_connections = count_connections(population[i])
+        num_active_connections = count_connections(population[i])
 
         # Add connection
-        if random.uniform(0,1) <= 0.2:# and num_active_connections < 106:
+        if random.uniform(0,1) <= 0.2 and num_active_connections < 106:
             add_connection(population[i])
 
         # Remove connection
-        if random.uniform(0, 1) <= 0.2:# and num_active_connections > 0:
+        if random.uniform(0, 1) <= 0.2 and num_active_connections > 0:
             remove_connection(population[i])
 
         # Mutate Threshold
@@ -413,21 +411,14 @@ def mutate(population, old_way, num_nodes=15):
             if random.uniform(0,1) <= (1/24):
                 mutate_threshold(population[i], t)
 
-        num_active_connections = count_connections(population[i])
-
         # Mutate connection
-        if old_way:
-            for w in range(num_active_connections):
-                if random.uniform(0, 1) <= (2 / num_active_connections):
-                    mutate_connection_oldway(population[i], w)
-        else:
-            if num_active_connections > 0:
-                for theta in range(len(population[i]["thetas"])):
-                    for neuron in range(len(population[i]["thetas"][theta])):
-                        for connection in range(len(population[i]["thetas"][theta][neuron])):
-                            if population[i]["thetas"][theta][neuron][connection] != 0:
-                                if random.uniform(0, 1) <= (2 / num_active_connections):
-                                    mutate_connection(population[i], theta, neuron, connection)
+        if num_active_connections > 0:
+            for theta in range(len(population[i]["thetas"])):
+                for neuron in range(len(population[i]["thetas"][theta])):
+                    for connection in range(len(population[i]["thetas"][theta][neuron])):
+                        if population[i]["thetas"][theta][neuron][connection] != 0:
+                            if random.uniform(0, 1) <= .025:# (2 / num_active_connections):
+                                mutate_connection(population[i], theta, neuron, connection)
 
         # apply_neuron_constraints(population[i])
 
