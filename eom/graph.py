@@ -84,12 +84,13 @@ class NetworkGraph:
                     self.module_colors.append(self.module_color_map[m])
                     break
 
-    def draw_graph(self, file_path, show=False):
+    def draw_graph(self, file_path, goal_is_and, show=False):
         fig = plt.figure(figsize=(14, 7))
         ax1 = fig.add_subplot(1, 1, 1)
         nx.draw(self.graph, pos=self.node_pos, edge_color=self.edge_colors, node_color=self.module_colors, node_size=800, with_labels=True,
                 ax=ax1)
-        ax1.set_title('Graph color coded by detected modules')
+        if goal_is_and: ax1.set_title(f'Graph color coded by detected modules. Goal: L AND R')
+        else: ax1.set_title(f'Graph color coded by detected modules. Goal: L OR R')
 
         # plt.text(.90, .95, f"ID: {self.network['id']}", transform=ax1.transAxes)
         plt.text(.90, .90, f"Loss: {self.network['loss']}", transform=ax1.transAxes)
@@ -120,5 +121,5 @@ def visualize_graph_data(population, runname, gen, graph=NetworkGraph):
         ng = graph(population[i])
         ng.convert2graph()
         ng.get_data()
-        ng.draw_graph(file_path)
+        ng.draw_graph(file_path, goal_is_and)
 
