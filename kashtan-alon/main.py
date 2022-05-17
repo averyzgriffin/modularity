@@ -37,6 +37,10 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
     visualize_graph_data(population[:10], runname, 0)
     save_weights(population[:10], runname, 0)
 
+    population_q = evaluate_q(population, normalize=True)  # TODO factor in randQ and maxQ
+    record_q(population_q, all_q, best_q, average_q)
+    plot_q(best_q, average_q, runname)
+
     for i in range(generations):
         print(f"\n ---- Run {runname}. Starting Gen {i}")
 
@@ -63,35 +67,37 @@ def main(samples, population, generations, p_m, goal, checkpoint, runname, mvg_f
 
             # Stuff we only want happening every checkpoint. e.g. saving experiment data
             if i % checkpoint == 0:
-                # visualize_graph_data(parents[:10], runname, i)
+                visualize_graph_data(parents[:10], runname, i)
                 # save_weights(parents[:10], runname, i)
                 # visualize_networks(parents[:10], runname, i)
                 plot_loss(best_losses, average_losses, runname)
-
+            if i % (checkpoint * 3) == 0:
                 # Computing modularity metrics. Expensive operation.
                 population_q = evaluate_q(population, normalize=True) # TODO factor in randQ and maxQ
                 record_q(population_q, all_q, best_q, average_q)
                 plot_q(best_q, average_q, runname)
+            if i % (checkpoint * 5) == 0:
+                save_weights(parents[:10], runname, i)
 
-        if detected_change:
-            print("Detected change post")
-            visualize_graph_data(parents[:5], runname, i-1)
-            save_weights(parents[:5], runname, i - 1)
-            visualize_networks(parents[:5], runname, i - 1)
-            detected_change = False
+        # if detected_change:
+        #     print("Detected change post")
+        #     visualize_graph_data(parents[:5], runname, i-1)
+        #     save_weights(parents[:5], runname, i - 1)
+        #     visualize_networks(parents[:5], runname, i - 1)
+        #     detected_change = False
 
         # Compute loss each generation
         population_loss = evaluate_population(population, samples, goal_is_and)
         record_loss(population_loss, all_losses, best_losses, average_losses)
         print("Loss: ", best_losses[i])
 
-        if i>0:
-            if best_losses[i] != best_losses[i-1]:
-                print("Detected change prior")
-                visualize_graph_data(parents[:5], runname, i - 1)
-                save_weights(parents[:5], runname, i-1)
-                visualize_networks(parents[:5], runname, i-1)
-                detected_change = True
+        # if i>0:
+        #     if best_losses[i] != best_losses[i-1]:
+        #         print("Detected change prior")
+        #         visualize_graph_data(parents[:5], runname, i - 1)
+        #         save_weights(parents[:5], runname, i-1)
+        #         visualize_networks(parents[:5], runname, i-1)
+        #         detected_change = True
 
     # Save experiment data at the very end
     visualize_graph_data(parents[:10], runname, generations)
