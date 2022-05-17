@@ -186,6 +186,29 @@ def unit_test_feedforward():
         population_loss = evaluate_population(population, samples, goal_is_and=True, activation="tanh")
 
 
+def unit_test_parallel(config, exp_id: str, trial_num: int):
+    runname = f"{exp_id}_trial_{str(trial_num).zfill(3)}"
+    checkpoint = config["checkpoint"]
+
+    for i in range(100):
+        for j in range(100):
+            z = i + j
+
+    final_loss = trial_num / 10
+    final_loss_index = 10 + trial_num
+    best_q = 100 + trial_num
+    best_q_index = 1000 + trial_num
+
+    column_headers = ["trial #", "Final Loss", "Final Loss Epoch", "Best Q", "Best Q Epoch"]
+    output_contents = [trial_num, final_loss, final_loss_index, best_q, best_q_index]
+    # print(output_contents)
+
+    csv_file = f"csvs/peterpan_{trial_num}"+".csv"
+    with open(csv_file, 'a+', newline='') as write_obj:
+        csv_writer = writer(write_obj)
+        csv_writer.writerow(column_headers)
+        csv_writer.writerow(output_contents)
+
 # Generate 256 Samples
 def and_label_sample(sample):
     left = False
