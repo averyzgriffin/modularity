@@ -114,10 +114,20 @@ class NetworkGraph:
 
 
 # Wrapper function to send networks in a population through networkx graph converter
-def visualize_graph_data(population, runname, gen, graph=NetworkGraph):
+def visualize_graph_data(population, exp_id, runname, gen, goal_is_and, graph=NetworkGraph):
     for i in tqdm(range(len(population)), desc="Converting networks to graphs"):
-        makedirs(join('networkx_graphs', runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
-        file_path = join('networkx_graphs', runname, f"gen_{gen}", f'network_{i}').replace("\\", "/")
+        makedirs(join('networkx_graphs', exp_id, runname, f"gen_{gen}").replace("\\", "/"), exist_ok=True)
+        file_path = join('networkx_graphs', exp_id, runname, f"gen_{gen}", f'network_{i}').replace("\\", "/")
+        ng = graph(population[i])
+        ng.convert2graph()
+        ng.get_data()
+        ng.draw_graph(file_path, goal_is_and)
+
+
+def visualize_graph_data_together(population, exp_id, trial_num, gen, goal_is_and, graph=NetworkGraph):
+    for i in tqdm(range(len(population)), desc="Converting networks to graphs"):
+        makedirs(join('networkx_graphs', exp_id, "combined", f"gen_{gen}").replace("\\", "/"), exist_ok=True)
+        file_path = join('networkx_graphs', exp_id, "combined", f"gen_{gen}", f'network_{i+(trial_num*20)}').replace("\\", "/")
         ng = graph(population[i])
         ng.convert2graph()
         ng.get_data()
