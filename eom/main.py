@@ -114,7 +114,20 @@ def main(config, exp_id: str, trial_num: int):
 
         population_loss = evaluate_population(population, samples, goal_is_and, loss="loss", activation="tanh")
         record_loss(population_loss, all_losses, best_losses, average_losses)
-        print("Loss: ", best_losses[i])
+        print(f"\n ---- {exp_id} {runname}. Gen {i} Loss: {best_losses[i]}")
+        # print(f"{runname} Loss: ", best_losses[i])
+
+        if best_losses[i] < best_loss:
+            best_loss = best_losses[i]
+            # TODO may need to sort first
+            population = select_best_score(population, all_losses[i], len(population))
+            save_weights(population, exp_id, runname, i)
+
+        if flag1 and best_losses[i] == 0:
+            # TODO may need to sort first
+            population = select_best_score(population, all_losses[i], len(population))
+            visualize_graph_data(population, exp_id, runname, i, goal_is_and)
+            flag1 = False
 
         if early_stopping:
             if best_losses[i] == 0:
