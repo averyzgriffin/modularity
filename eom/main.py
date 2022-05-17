@@ -105,21 +105,73 @@ def main(config):
                 print("Early Stop!")
                 break
 
-        # if checking and (counter > 30 or i > 2000):
-        #     save_mode = True
-        #     start, stop = i, i + 101
-        #     print("Save mode active until generation ", stop)
-        #     checking = False
-        #
-        # if save_mode:
-        #     if start <= i <= stop:
-        #         visualize_graph_data(population, runname, i)
-        #         save_weights(population, runname, i)
+    # Final Generation Operations
+    plot_loss(best_losses, average_losses, exp_id, trial_num)
+    visualize_graph_data(population, exp_id, runname, i, goal_is_and)
+    save_weights(population, exp_id, runname, i)
 
-    # Final operations
-    plot_loss(best_losses, average_losses, runname)
-    visualize_graph_data(population, runname, i)
-    save_weights(parents[:10], runname, i)
+    parents = select_best_score(population, all_losses[i], num_parents)
+    population_q = evaluate_q(population, normalize=True)
+    record_q(population_q, all_q, best_q_values, average_q, q_gens, i)
+    plot_q(best_q_values, average_q, q_gens, exp_id, trial_num)
+    highestQ_networks = select_best_score(population, all_q[int((i / qvalue_interval))], 10, reverse=True)
+    visulized_nets = parents[:10] + highestQ_networks[:10]
+    visualize_graph_data_together(visulized_nets, exp_id, trial_num, i, goal_is_and)
+
+    final_loss = best_losses[-1]
+    final_loss_index = best_losses.index(final_loss)
+    best_q = max(best_q_values)
+    best_q_index = best_q_values.index(best_q) * qvalue_interval
+    final_best_q = best_q_values[-1]
+    final_average_q = average_q[-1]
+
+    mean_best_q = np.mean(best_q_values)
+    mean_average_q = np.mean(average_q)
+    variance_best_q = np.var(average_q)
+    variance_average_q = np.var(average_q)
+
+    output_contents = [exp_id, trial_num, goal, final_loss, final_loss_index, best_q, best_q_index,
+                       final_best_q, final_average_q, mean_best_q, mean_average_q, variance_best_q, variance_average_q]
+
+    column_labels = ["Exp ID", "Trial #", "Goal", "Best Loss", "Best Loss Gen", "Best Q", "Best Q Gen",
+                     "Final Q", "Final Ave Q", "Mean Best Q", "Mean Ave Q", "Variance Best Q", "Variance Ave Q"]
+
+    makedirs(f"csvs/{exp_id}", exist_ok=True)
+    csv_file = f"csvs/{exp_id}/{exp_id}_{str(trial_num).zfill(3)}.csv"
+    with open(csv_file, 'a+', newline='') as write_obj:
+        csv_writer = writer(write_obj)
+        csv_writer.writerow(column_labels)
+        csv_writer.writerow(output_contents)
+
+
+def parallel_checkpoint(best_losses, best_q_values, average_q, exp_id, trial_num, qvalue_interval, goal, gen_num):
+    final_loss = best_losses[-1]
+    final_loss_index = best_losses.index(final_loss)
+    best_q = max(best_q_values)
+    best_q_index = best_q_values.index(best_q) * qvalue_interval
+    final_best_q = best_q_values[-1]
+    final_average_q = average_q[-1]
+
+    mean_best_q = np.mean(best_q_values)
+    mean_average_q = np.mean(average_q)
+    variance_best_q = np.var(average_q)
+    variance_average_q = np.var(average_q)
+
+    output_contents = [exp_id, trial_num, goal, gen_num, final_loss, final_loss_index, best_q, best_q_index,
+                       final_best_q, final_average_q, mean_best_q, mean_average_q, variance_best_q, variance_average_q]
+
+    column_labels = ["Exp ID", "Trial #", "Goal", "Total Gens", "Best Loss", "Best Loss Gen", "Best Q", "Best Q Gen",
+                     "Final Q", "Final Ave Q", "Mean Best Q", "Mean Ave Q", "Variance Best Q", "Variance Ave Q"]
+
+    makedirs(f"csvs/{exp_id}", exist_ok=True)
+    csv_file = f"csvs/{exp_id}/{exp_id}_{str(trial_num).zfill(3)}.csv"
+    try:
+        with open(csv_file, 'w', newline='') as write_obj:
+            csv_writer = writer(write_obj)
+            csv_writer.writerow(column_labels)
+            csv_writer.writerow(output_contents)
+    except Exception as e:
+        print(e)
 
 
 def unit_test_feedforward():
