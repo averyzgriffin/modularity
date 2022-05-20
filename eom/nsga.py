@@ -7,7 +7,6 @@ num_parents = population_size*.4
 
 
 def main():
-
     population = initialize_pop(N)
 
     for i in range(100):
@@ -20,8 +19,20 @@ def main():
         population = nondomimant_sorting(population)  # use crowding_distance() to sort any overflowing fronts
 
 
+def main2():
+    population = initialize_pop(100)
+    for i in range(1):
+        orgs = [tuple([obj_1(i), obj_2(i)]) for i in population]
+        # parents = stochastic_dominant_selection(population, r, num_parents)
+        # offspring = crossover(parents, N)
+        # population = population + mutate(offspring)
+        fronts = sortNondominated(orgs)
+
+
 def initialize_pop(pop_size):
-    return random.sample(range(-10, 10), pop_size)
+    x = random.sample(range(-100, 100), pop_size)
+    # y = [{"id": str(i), "genome": j, "obj1": None, "obj2": None} for i,j in zip(range(len(x)), x)]
+    return x
 
 
 def stochastic_dominant_selection(population, r, num_parents):
@@ -30,27 +41,30 @@ def stochastic_dominant_selection(population, r, num_parents):
         ps = random.sample(range(len(population)), 2)
         parent1 = population[ps[0]]
         parent2 = population[ps[1]]
+        current_parents = [parent1, parent2]
 
-        # if (np.random.uniform(0,1) > r and outperforms(parent1["loss"], parent2["loss"])) or dominates(parent1["objs"], parent2["objs"], [-1, 1]):
+        # if (np.random.uniform(0,1) > r and outperforms(parent1[0], parent2[0])) or dominates(parent1["objs"], parent2["objs"], [-1, 1]):
         #     parents.append(parent1)
-        # elif ( np.random.uniform(0,1) > r and outperforms(parent2["loss"], parent1["loss"]) ) or dominates(parent2["objs"], parent1["objs"], [-1, 1]):
+        # elif ( np.random.uniform(0,1) > r and outperforms(parent2[0], parent1[0]) ) or dominates(parent2["objs"], parent1["objs"], [-1, 1]):
         #     parents.append(parent2)
 
         stochastic = np.random.uniform(0, 1) <= r
         if not stochastic:
-            if outperforms(parent1["loss"], parent2["loss"]):
+            if outperforms(parent1[0], parent2[0]):
                 parents.append(parent1)
-            elif outperforms(parent2["loss"], parent1["loss"]):
+            elif outperforms(parent2[0], parent1[0]):
                 parents.append(parent2)
             else:
-                parents.append([parent1, parent2][less_crowded(parent1, parent2)])
+                parents.append(current_parents[random.randint(0,1)])
+                # parents.append([parent1, parent2][less_crowded(parent1, parent2)])
         elif stochastic:
-            if dominates(parent1["objs"], parent2["objs"], [-1, 1]):
+            if dominates(parent1, parent2, [-1, -1]):
                 parents.append(parent1)
-            elif dominates(parent2["objs"], parent1["objs"], [-1, 1]):
+            elif dominates(parent2, parent1, [-1, -1]):
                 parents.append(parent2)
             else:
-                parents.append([parent1, parent2][less_crowded(parent1, parent2)])
+                parents.append(current_parents[random.randint(0,1)])
+                # parents.append([parent1, parent2][less_crowded(parent1, parent2)])
 
     return parents
 
@@ -92,23 +106,6 @@ def obj_2(x):
 def nondomimant_sorting():
     pass
 
-def main():
-    # Testing - [Loss Score, Connection Cost]
-    signs = [-1,-1]
-    population = initialize_pop(2)
-    losses = [obj_1(i) for i in population]
-    cc = [obj_2(i) for i in population]
-    objs = [losses, cc]
-    orgs = [[obj[i] for obj in objs] for i in range(len(population))]
-    doms = dominates(orgs[0], orgs[1], signs)
-
-    print(population)
-    print(losses)
-    print(cc)
-    print(doms)
-
-    fronts = sortNondominated(losses)
-
 
 def sortNondominated(individuals, k=None, first_front_only=False):
     """Sort the first *k* *individuals* into different nondomination levels
@@ -130,11 +127,10 @@ def sortNondominated(individuals, k=None, first_front_only=False):
     if k is None:
         k = len(individuals)
 
-    # Use objectives as keys to make python dictionary
     map_fit_ind = defaultdict(list)
-    for ind in individuals:
-        map_fit_ind[ind.fitness].append(ind)
-    fits = map_fit_ind.keys()
+    for i, f_value in enumerate(individuals):  # fitness = [(1, 2), (2, 2), (3, 1), (1, 4), (1, 1)...]
+        map_fit_ind[f_value].append(i)
+    fits = list(map_fit_ind.keys())  # fitness values
 
     current_front = []
     next_front = []
@@ -182,14 +178,20 @@ def sortNondominated(individuals, k=None, first_front_only=False):
     return fronts
 
 
+def crossover(a,b):
+    r=random.random()
+    if r>0.5:
+        return mutate((a+b)/2)
+    else:
+        return mutate((a-b)/2)
 
 
+def mutate(solution):
+    mutation_prob = random.random()
+    if mutation_prob < 1:
+        solution = -100+(100+100)*random.random()
+    return solution
 
-def mutate():
-    pass
-
-def crossover():
-    pass
 
 def compute_performance_loss():
     pass
@@ -198,7 +200,7 @@ def compute_connection_count_costs():
     pass
 
 
-main()
+main2()
 
 
 
