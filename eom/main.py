@@ -82,11 +82,6 @@ def main(config, exp_id: str, trial_num: int):
         if mvg and i % mvg_frequency == 0 and i != 0:
             goal_is_and = not goal_is_and
 
-        # if (qvalues and i % qvalue_interval == 0) or (qvalues and i == generations-1):
-        #     population_q = evaluate_q(population, normalize=True)
-        #     record_q(population_q, all_q, best_q_values, average_q)
-        #     plot_q(best_q_values, average_q, exp_id, trial_num)
-
         if i > 0:
             # Main genetic algorithm code
             parents = select_best_score(population, all_losses[i - 1], num_parents)
@@ -94,7 +89,7 @@ def main(config, exp_id: str, trial_num: int):
             population = mutate(offspring)
             if elite: population = parents + population
 
-            if i % 50:
+            if i % 100:
                 plot_loss(best_losses, average_losses, exp_id, trial_num)
 
             # Checkpoint
@@ -109,7 +104,7 @@ def main(config, exp_id: str, trial_num: int):
             if i % 5000 == 0:
                 save_weights(population, exp_id, runname, i)
 
-            if i % 100 == 0:
+            if i % 1000 == 0:
                 parallel_checkpoint(best_losses, best_q_values, average_q, exp_id, trial_num, qvalue_interval, goal, i)
 
         population_loss = evaluate_population(population, samples, goal_is_and, loss="loss", activation="tanh")
@@ -163,18 +158,21 @@ def main(config, exp_id: str, trial_num: int):
     variance_best_q = np.var(average_q)
     variance_average_q = np.var(average_q)
 
-    output_contents = [exp_id, trial_num, goal, final_loss, final_loss_index, best_q, best_q_index,
+    output_contents = [exp_id, trial_num, goal, i, final_loss, final_loss_index, best_q, best_q_index,
                        final_best_q, final_average_q, mean_best_q, mean_average_q, variance_best_q, variance_average_q]
 
-    column_labels = ["Exp ID", "Trial #", "Goal", "Best Loss", "Best Loss Gen", "Best Q", "Best Q Gen",
+    column_labels = ["Exp ID", "Trial #", "Goal", "Total Gens", "Best Loss", "Best Loss Gen", "Best Q", "Best Q Gen",
                      "Final Q", "Final Ave Q", "Mean Best Q", "Mean Ave Q", "Variance Best Q", "Variance Ave Q"]
 
     makedirs(f"csvs/{exp_id}", exist_ok=True)
     csv_file = f"csvs/{exp_id}/{exp_id}_{str(trial_num).zfill(3)}.csv"
-    with open(csv_file, 'a+', newline='') as write_obj:
-        csv_writer = writer(write_obj)
-        csv_writer.writerow(column_labels)
-        csv_writer.writerow(output_contents)
+    try:
+        with open(csv_file, 'w', newline='') as write_obj:
+            csv_writer = writer(write_obj)
+            csv_writer.writerow(column_labels)
+            csv_writer.writerow(output_contents)
+    except Exception as e:
+        print(e)
 
 
 def parallel_checkpoint(best_losses, best_q_values, average_q, exp_id, trial_num, qvalue_interval, goal, gen_num):
