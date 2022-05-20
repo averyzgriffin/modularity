@@ -25,9 +25,8 @@ def clear_dirs(id):
 
 def evolve(exp_id):
     procs = []
-    for j in range(9):
+    for j in range(10):
         for i in range(10):
-            i = i + 10
             i = i + (10*j)
             proc = subprocess.Popen([sys.executable, 'main.py', '--exp_id', exp_id, '--trial_number', f'{i}'])
             procs.append(proc)
@@ -45,7 +44,7 @@ def post_process(exp_id):
 
 
 if __name__ == "__main__":
-    exp_id = "noooooooooooooo051122_SuperEvolve_MVG"
+    exp_id = "050122_SuperEvolve_FixedOR"
     # clear_dirs(exp_id)
     evolve(exp_id)
     post_process(exp_id)
