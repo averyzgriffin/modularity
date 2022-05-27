@@ -1,16 +1,16 @@
 # Config settings for main experiment
-runname: mvg_test
+runname: connectioncost4
 
 checkpoint: 500
-elite: True
+elite: False
 gen_size: 1000
-generations: 5000
-mvg: True
+generations: 25000
+mvg: False
 mvg_frequency: 20
 goal_is_and: True
-qvalues: False
-qvalue_interval: 30
-parents_perc: .40
+qvalues: True
+qvalue_interval: 1000
+parents_perc: .80
 early_stopping: True
 load_initial_gen: False
 initial_gen_path: "saved_weights/fixed_gen1000_004/gen_200"
