@@ -77,12 +77,36 @@ def main(config):
             plot_q(best_q, average_q, parents_q, runname)
 
         if i > 0:
-            # Main genetic algorithm code
-            parents = select_best_score(population, all_losses[i - 1], num_parents)
+
+            ccs = [count_connections(network) for network in population]
+            print("Best Connection Cost: ", min(ccs))
+
+            pop_objs = [tuple([loss, cc]) for loss, cc in zip(population_loss, ccs)]
+            distances = CrowdingDist(pop_objs)
+            parents = stochastic_dominant_selection(population, pop_objs, .25, num_parents, distances)
+
             offspring = crossover(parents, gen_size, elite, parents_perc)
-            population = mutate(offspring)
-            if elite:
-                population = parents + population
+            offspring = mutate(offspring)
+
+            loss_offspring = evaluate_population(offspring, samples, goal_is_and, loss="loss", activation="tanh")
+            cc_offspring = [count_connections(network) for network in offspring]
+
+            offspring_objs = [tuple([loss, cc]) for loss, cc in zip(loss_offspring, cc_offspring)]
+            offspring_distances = CrowdingDist(offspring_objs)
+
+            merged_pop = population + offspring
+            merged_objs = pop_objs + offspring_objs
+            merged_distances = distances + offspring_distances
+
+            fronts = sortNondominated(merged_objs, r=.25)
+            population = selectPopulationFromFronts(fronts, merged_pop, merged_distances, gen_size)
+
+            # Main genetic algorithm code
+            # parents = select_best_score(population, all_losses[i - 1], num_parents)
+            # offspring = crossover(parents, gen_size, elite, parents_perc)
+            # population = mutate(offspring)
+            # if elite:
+            #     population = parents + population
 
             if i % 50:
                 plot_loss(best_losses, average_losses, runname)
