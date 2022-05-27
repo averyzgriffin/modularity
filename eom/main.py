@@ -412,6 +412,8 @@ def mutate(population, num_nodes=15):
                 mutate_threshold(population[i], t)
 
         # Mutate connection
+        if broadness: pm = 0.025
+        else: pm = 2 / num_active_connections
         if num_active_connections > 0:
             for theta in range(len(population[i]["thetas"])):
                 for neuron in range(len(population[i]["thetas"][theta])):
