@@ -1,3 +1,4 @@
+from collections import defaultdict
 import copy
 import itertools
 import json
