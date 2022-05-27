@@ -620,7 +620,7 @@ def crossover(parents, gen_size, elite, parents_perc):
 
 
 # Mutate Network
-def mutate(population, num_nodes=15):
+def mutate(population, num_nodes=15, broadness=False):
     """Instead of iterating through each weight, just do the random pull the appropriate number of times,
        choose a number randomly from the appropriate domain, and then alter that node/weight/bias"""
     for i in range(len(population)):
@@ -648,7 +648,7 @@ def mutate(population, num_nodes=15):
                 for neuron in range(len(population[i]["thetas"][theta])):
                     for connection in range(len(population[i]["thetas"][theta][neuron])):
                         if population[i]["thetas"][theta][neuron][connection] != 0:
-                            if random.uniform(0, 1) <= .025:# (2 / num_active_connections):
+                            if random.uniform(0, 1) <= pm:
                                 mutate_connection(population[i], theta, neuron, connection)
 
         # apply_neuron_constraints(population[i])
@@ -746,7 +746,6 @@ def map_weight_network(weight_num):
             return index
 
 
-# Multiobjective Selection
 def select_best_score(population, scores, num_parents, reverse=False):
     # Sorts the population by loss scores from lowest to highest and returns the best
     sort = sorted(range(len(scores)), key=lambda k: scores[k], reverse=reverse)
