@@ -157,6 +157,210 @@ def unit_test_feedforward():
         population_loss = evaluate_population(population, samples, goal_is_and=True, activation="tanh")
 
 
+def sortNondominated(individuals, k=None, first_front_only=False, r=0.25):
+    """Sort the first *k* *individuals* into different nondomination levels
+        using the "Fast Nondominated Sorting Approach" proposed by Deb et al.,
+        see [Deb2002]_. This algorithm has a time complexity of :math:`O(MN^2)`,
+        where :math:`M` is the number of objectives and :math:`N` the number of
+        individuals.
+        :param individuals: A list of individuals to select from.
+        :param k: The number of individuals to select.
+        :param first_front_only: If :obj:`True` sort only the first front and
+                                    exit.
+        :param sign: indicate the objectives are maximized or minimized
+        :returns: A list of Pareto fronts (lists), the first list includes
+                    nondominated individuals.
+        .. [Deb2002] Deb, Pratab, Agarwal, and Meyarivan, "A fast elitist
+            non-dominated sorting genetic algorithm for multi-objective
+            optimization: NSGA-II", 2002.
+    """
+    if k is None:
+        k = len(individuals)
+
+    map_fit_ind = defaultdict(list)
+    for i, f_value in enumerate(individuals):  # fitness = [(1, 2), (2, 2), (3, 1), (1, 4), (1, 1)...]
+        map_fit_ind[f_value].append(i)
+    fits = list(map_fit_ind.keys())  # fitness values
+
+    current_front = []
+    next_front = []
+    dominating_fits = defaultdict(int)  # n (The number of people dominate you)
+    dominated_fits = defaultdict(list)  # Sp (The people you dominate)
+
+    # Rank first Pareto front
+    # *fits* is a iterable list of chromosomes. Each has multiple objectives.
+    for i, fit_i in enumerate(fits):
+        for fit_j in fits[i + 1:]:
+            # Eventhougn equals or empty list, n & Sp won't be affected
+
+            # Stochastic Pareto Dominance as per Clune,Mouret,Lipson 2013
+            stochastic = np.random.uniform(0, 1) <= r
+            if not stochastic:
+                if outperforms(fit_i[0], fit_j[0]):
+                    dominating_fits[fit_j] += 1
+                    dominated_fits[fit_i].append(fit_j)
+                elif outperforms(fit_j[0], fit_i[0]):
+                    dominating_fits[fit_i] += 1
+                    dominated_fits[fit_j].append(fit_i)
+            elif stochastic:
+                if dominates(fit_i, fit_j, [-1, -1]):
+                    dominating_fits[fit_j] += 1
+                    dominated_fits[fit_i].append(fit_j)
+                elif dominates(fit_j, fit_i, [-1, -1]):
+                    dominating_fits[fit_i] += 1
+                    dominated_fits[fit_j].append(fit_i)
+
+            # Regular nondom selection
+            # if dominates(fit_i, fit_j):
+            #     dominating_fits[fit_j] += 1
+            #     dominated_fits[fit_i].append(fit_j)
+            # elif dominates(fit_j, fit_i):
+            #     dominating_fits[fit_i] += 1
+            #     dominated_fits[fit_j].append(fit_i)
+
+        if dominating_fits[fit_i] == 0:
+            current_front.append(fit_i)
+
+    fronts = [[]]  # The first front
+    for fit in current_front:
+        fronts[-1].extend(map_fit_ind[fit])
+    pareto_sorted = len(fronts[-1])
+
+    # Rank the next front until all individuals are sorted or
+    # the given number of individual are sorted.
+    # If Sn=0 then the set of objectives belongs to the next front
+    if not first_front_only:  # first front only
+        N = min(len(individuals), k)
+        while pareto_sorted < N:
+            fronts.append([])
+            for fit_p in current_front:
+                # Iterate Sn in current fronts
+                for fit_d in dominated_fits[fit_p]:
+                    dominating_fits[fit_d] -= 1  # Next front -> Sn - 1
+                    if dominating_fits[fit_d] == 0:  # Sn=0 -> next front
+                        next_front.append(fit_d)
+                         # Count and append chromosomes with same objectives
+                        pareto_sorted += len(map_fit_ind[fit_d])
+                        fronts[-1].extend(map_fit_ind[fit_d])
+            current_front = next_front
+            next_front = []
+
+    return fronts
+
+
+def selectPopulationFromFronts(fronts, population, distances, population_size):
+    idxs = []
+    for front in fronts:
+        if len(idxs) + len(front) <= population_size:
+           idxs.extend(front)
+        else:
+            d = population_size - len(idxs)
+            front_distances = [(distances[idx], idx) for idx in front]
+            front_distances.sort(reverse=True)
+            front = [x[1] for x in front_distances]
+            idxs.extend(front[:d])
+        if len(idxs) == population_size:
+            break
+
+    return [population[i] for i in idxs]
+
+
+def stochastic_dominant_selection(population, pop_objs, r, num_parents, distances):
+    parents_idxs = []
+    while len(parents_idxs) < num_parents:
+        ps = random.sample(range(len(pop_objs)), 2)
+        parent1 = pop_objs[ps[0]]
+        parent2 = pop_objs[ps[1]]
+
+        stochastic = np.random.uniform(0, 1) <= r
+        if not stochastic:
+            if outperforms(parent1[0], parent2[0]):
+                parents_idxs.append(ps[0])
+            elif outperforms(parent2[0], parent1[0]):
+                parents_idxs.append(ps[1])
+            else:
+                parents_idxs.append(less_crowded(distances, ps[0], ps[1]))
+        elif stochastic:
+            if dominates(parent1, parent2, [-1, -1]):
+                parents_idxs.append(ps[0])
+            elif dominates(parent2, parent1, [-1, -1]):
+                parents_idxs.append(ps[1])
+            else:
+                parents_idxs.append(less_crowded(distances, ps[0], ps[1]))
+                # if distances[ps[0]] > distances[ps[1]]:
+                #     parents_idxs.append(ps[0])
+                # elif distances[ps[0]] < distances[ps[1]]:
+                #     parents_idxs.append(ps[1])
+                # else:
+                #     parents_idxs.append(current_parents[random.randint(0, 1)][0])
+
+    return [population[i] for i in parents_idxs]
+
+
+def less_crowded(distances, a, b):
+    if distances[a] > distances[b]:
+        return a
+    elif distances[a] < distances[b]:
+        return b
+    else:
+        return random.choice([a, b])
+
+
+def outperforms(a, b, sign=-1):
+    if a * sign > b * sign:
+        return True
+    else:
+        return False
+
+
+def dominates(objs_orgA, objs_orgB, sign=[-1, -1]):
+    """ Returns True iff organism A dominates organism B along all objectives"""
+    indicator = False
+    for a, b, sign in zip(objs_orgA, objs_orgB, sign):
+        if a * sign > b * sign:
+            indicator = True
+        # if a is dominated by b in one of the objectives, then return False
+        elif a * sign < b * sign:
+            return False
+    return indicator
+
+
+def CrowdingDist(fitness=None):
+    """
+    :param fitness: A list of fitness values
+    :return: A list of crowding distances of chrmosomes
+
+    The crowding-distance computation requires sorting the population according to each objective function value
+    in ascending order of magnitude. Thereafter, for each objective function, the boundary solutions (solutions with smallest and largest function values)
+    are assigned an infinite distance value. All other intermediate solutions are assigned a distance value equal to
+    the absolute normalized difference in the function values of two adjacent solutions.
+    """
+
+    # initialize list: [0.0, 0.0, 0.0, ...]
+    distances = [0.0] * len(fitness)
+    crowd = [(f_value, i) for i, f_value in enumerate(fitness)]  # create keys for fitness values
+
+    n_obj = len(fitness[0])
+
+    for i in range(n_obj):  # calculate for each objective
+        crowd.sort(key=lambda element: element[0][i])
+        # After sorting,  boundary solutions are assigned Inf
+        # crowd: [([obj_1, obj_2, ...], i_0), ([obj_1, obj_2, ...], i_1), ...]
+        distances[crowd[0][1]] = float("Inf")
+        distances[crowd[-1][1]] = float("inf")
+        if crowd[-1][0][i] == crowd[0][0][i]:  # If objective values are same, skip this loop
+            continue
+        # normalization (max - min) as Denominator
+        norm = float(crowd[-1][0][i] - crowd[0][0][i])
+        # crowd: [([obj_1, obj_2, ...], i_0), ([obj_1, obj_2, ...], i_1), ...]
+        # calculate each individual's Crowding Distance of i th objective
+        # technique: shift the list and zip
+        for prev, cur, next in zip(crowd[:-2], crowd[1:-1], crowd[2:]):
+            distances[cur[1]] += (next[0][i] - prev[0][i]) / norm  # sum up the distance of ith individual along each of the objectives
+
+    return distances
+
+
 # Generate 256 Samples
 def and_label_sample(sample):
     left = False
