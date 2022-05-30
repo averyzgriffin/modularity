@@ -2,6 +2,10 @@
 *.pdf
 *.txt
 *.json
+*.png
+*.jpg
+*.csv
+*.yaml
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
